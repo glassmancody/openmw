@@ -741,14 +741,17 @@ void WeatherManager::update(float duration, bool paused, const TimeStamp& time, 
         const float dayDuration = adjustedNightStart - mSunriseTime;
         const float nightDuration = 24.f - dayDuration;
 
-        double theta;
+        double theta = 0;
+        double sunHeight = 0;
         if ( !is_night )
         {
             theta = static_cast<float>(osg::PI) * (adjustedHour - mSunriseTime) / dayDuration;
+            sunHeight = theta < (osg::PI / 2) ? theta : osg::PI - theta;
         }
         else
         {
             theta = static_cast<float>(osg::PI) - static_cast<float>(osg::PI) * (adjustedHour - adjustedNightStart) / nightDuration;
+            sunHeight = -1 * (theta > (1.5 * osg::PI) ? (osg::PI - (theta - osg::PI)) : theta - osg::PI);
         }
 
         osg::Vec3f final(
@@ -756,6 +759,7 @@ void WeatherManager::update(float duration, bool paused, const TimeStamp& time, 
             -0.268f, // approx tan( -15 degrees )
             static_cast<float>(sin(theta)));
         mRendering.setSunDirection( final * -1 );
+        mRendering.getSkyManager()->setSunHeight(sunHeight / (osg::PI/2));
     }
 
     float underwaterFog = mUnderwaterFog.getValue(time.getHour(), mTimeSettings, "Fog");
@@ -778,6 +782,8 @@ void WeatherManager::update(float duration, bool paused, const TimeStamp& time, 
                             mResult.mDLFogOffset/100.0f, mResult.mFogColor);
     mRendering.setAmbientColour(mResult.mAmbientColor);
     mRendering.setSunColour(mResult.mSunColor, mResult.mSunColor * mResult.mGlareView * glareFade);
+    mRendering.getSkyManager()->setWeather(mCurrentWeather, mNextWeather,
+                                           inTransition() ? mTransitionFactor : 0.f);
 
     mRendering.getSkyManager()->setWeather(mResult);
 

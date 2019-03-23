@@ -343,15 +343,16 @@ namespace MWRender
         sceneRoot->setNodeMask(Mask_Scene);
         sceneRoot->setName("Scene Root");
 
-        mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager()));
-
-        mSky->setCamera(mViewer->getCamera());
-        mSky->setRainIntensityUniform(mWater->getRainIntensityUniform());
-
         source->setStateSetModes(*mRootNode->getOrCreateStateSet(), osg::StateAttribute::ON);
 
         mStateUpdater = new StateUpdater;
         sceneRoot->addUpdateCallback(mStateUpdater);
+
+        // the sky manager might add its own update callback to sceneRoot,
+        // which should happen after adding mStateUpdater
+        mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager()));
+        mSky->setCamera(mViewer->getCamera());
+        mSky->setRainIntensityUniform(mWater->getRainIntensityUniform());
 
         osg::Camera::CullingMode cullingMode = osg::Camera::DEFAULT_CULLING|osg::Camera::FAR_PLANE_CULLING;
 
@@ -667,6 +668,7 @@ namespace MWRender
             mStateUpdater->setFogStart(mLandFogStart);
             mStateUpdater->setFogEnd(mLandFogEnd);
         }
+        mSky->setCameraPos(mCurrentCameraPos);
     }
 
     void RenderingManager::updatePlayerPtr(const MWWorld::Ptr &ptr)
