@@ -57,6 +57,7 @@
 #include "../mwbase/windowmanager.hpp"
 
 #include "sky.hpp"
+#include "skymanagerwithshaders.hpp"
 #include "effectmanager.hpp"
 #include "npcanimation.hpp"
 #include "vismask.hpp"
@@ -217,8 +218,15 @@ namespace MWRender
         , mFieldOfViewOverride(0.f)
         , mBorders(false)
     {
+        bool detailedFog = Settings::Manager::getBool("detailed fog", "General");
+
         resourceSystem->getSceneManager()->setParticleSystemMask(MWRender::Mask_ParticleSystem);
-        resourceSystem->getSceneManager()->setShaderPath(resourcePath + "/shaders");
+
+        if (detailedFog)
+            resourceSystem->getSceneManager()->setShaderPath(resourcePath + "/shaders/detailed_fog");
+        else
+            resourceSystem->getSceneManager()->setShaderPath(resourcePath + "/shaders");
+
         resourceSystem->getSceneManager()->setForceShaders(Settings::Manager::getBool("force shaders", "Shaders") || Settings::Manager::getBool("enable shadows", "Shadows")); // Shadows have problems with fixed-function mode
         // FIXME: calling dummy method because terrain needs to know whether lighting is clamped
         resourceSystem->getSceneManager()->setClampLighting(Settings::Manager::getBool("clamp lighting", "Shaders"));
@@ -350,7 +358,10 @@ namespace MWRender
 
         // the sky manager might add its own update callback to sceneRoot,
         // which should happen after adding mStateUpdater
-        mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager()));
+        if (detailedFog)
+            mSky.reset(new SkyManagerWithShaders(sceneRoot, resourceSystem->getSceneManager()));
+        else
+            mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager()));
         mSky->setCamera(mViewer->getCamera());
         mSky->setRainIntensityUniform(mWater->getRainIntensityUniform());
 

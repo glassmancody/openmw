@@ -582,6 +582,11 @@ private:
         oqn->setInitialBound(queryGeom->getBound());
 
         osg::StateSet* queryStateSet = new osg::StateSet;
+
+        osg::ref_ptr<osg::AlphaFunc> alphaFunc (new osg::AlphaFunc);
+        alphaFunc->setFunction(osg::AlphaFunc::GREATER, 0.8);
+        queryStateSet->setAttributeAndModes(alphaFunc, osg::StateAttribute::ON);
+
         if (queryVisible)
         {
             osg::ref_ptr<osg::Depth> depth (new osg::Depth);
@@ -1169,6 +1174,21 @@ void SkyManager::create()
     mAtmosphereUpdater = new AtmosphereUpdater;
     mAtmosphereDay->addUpdateCallback(mAtmosphereUpdater);
     mAtmosphereDay->setUserValue<int>("skyObjectType", SkyObjectType::ATMOSPHERE);
+
+//     if (false)
+//     {
+//         osg::ref_ptr<osg::PositionAttitudeTransform> floorTransform = new osg::PositionAttitudeTransform;
+//         {
+//             const float floorScale = 100;
+//             floorTransform->setScale(osg::Vec3(floorScale, floorScale, 1));
+//             osg::Quat quat(0,0,-1,1);
+//             floorTransform->setAttitude(quat);
+//         }
+//         osg::ref_ptr<osg::Node> floor = createTexturedQuad();
+//         floorTransform->addChild(floor);
+//         mEarlyRenderBinRoot->addChild(floorTransform);
+//         floor->addUpdateCallback(mAtmosphereUpdater);
+//     }
 
     mAtmosphereNightNode = new osg::PositionAttitudeTransform;
     mAtmosphereNightNode->setNodeMask(0);

@@ -719,11 +719,7 @@ void WeatherManager::update(float duration, bool paused, const TimeStamp& time, 
         mRendering.getSkyManager()->setStormDirection(mStormDirection);
     }
 
-    // disable sun during night
-    if (time.getHour() >= mTimeSettings.mNightStart || time.getHour() <= mSunriseTime)
-        mRendering.getSkyManager()->sunDisable();
-    else
-        mRendering.getSkyManager()->sunEnable();
+    mRendering.getSkyManager()->sunEnable();
 
     // Update the sun direction.  Run it east to west at a fixed angle from overhead.
     // The sun's speed at day and night may differ, since mSunriseTime and mNightStart
@@ -750,7 +746,8 @@ void WeatherManager::update(float duration, bool paused, const TimeStamp& time, 
         }
         else
         {
-            theta = static_cast<float>(osg::PI) - static_cast<float>(osg::PI) * (adjustedHour - adjustedNightStart) / nightDuration;
+//             theta = static_cast<float>(osg::PI) - static_cast<float>(osg::PI) * (adjustedHour - adjustedNightStart) / nightDuration;
+            theta = static_cast<float>(osg::PI) * (1.f + (adjustedHour - adjustedNightStart) / nightDuration);
             sunHeight = -1 * (theta > (1.5 * osg::PI) ? (osg::PI - (theta - osg::PI)) : theta - osg::PI);
         }
 

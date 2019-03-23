@@ -240,6 +240,7 @@ public:
         fog->setStart(10000000);
         fog->setEnd(10000000);
         getOrCreateStateSet()->setAttributeAndModes(fog, osg::StateAttribute::OFF|osg::StateAttribute::OVERRIDE);
+        getOrCreateStateSet()->addUniform(new osg::Uniform("isWaterRefraction", true), osg::StateAttribute::OVERRIDE);
 
         mClipCullNode = new ClipCullNode;
         addChild(mClipCullNode);
@@ -346,6 +347,7 @@ public:
         osg::ref_ptr<osg::FrontFace> frontFace (new osg::FrontFace);
         frontFace->setMode(osg::FrontFace::CLOCKWISE);
         getOrCreateStateSet()->setAttributeAndModes(frontFace, osg::StateAttribute::ON);
+        getOrCreateStateSet()->addUniform(new osg::Uniform("isWaterReflection", true), osg::StateAttribute::OVERRIDE);
 
         mClipCullNode = new ClipCullNode;
         addChild(mClipCullNode);
@@ -414,7 +416,7 @@ Water::Water(osg::Group *parent, osg::Group* sceneRoot, Resource::ResourceSystem
 {
     mSimulation.reset(new RippleSimulation(parent, resourceSystem, fallback));
 
-    mWaterGeom = SceneUtil::createWaterGeometry(Constants::CellSizeInUnits*150, 40, 900);
+    mWaterGeom = SceneUtil::createWaterGeometry(Constants::CellSizeInUnits * 5500, 40, 900);
     mWaterGeom->setDrawCallback(new DepthClampCallback);
     mWaterGeom->setNodeMask(Mask_Water);
 
@@ -544,6 +546,9 @@ void Water::createShaderWaterStateSet(osg::Node* node, Reflection* reflection, R
     osg::ref_ptr<osg::Shader> vertexShader (shaderMgr.getShader("water_vertex.glsl", defineMap, osg::Shader::VERTEX));
     osg::ref_ptr<osg::Shader> fragmentShader (shaderMgr.getShader("water_fragment.glsl", defineMap, osg::Shader::FRAGMENT));
 
+    assert(vertexShader.valid());
+    assert(fragmentShader.valid());
+
     osg::ref_ptr<osg::Texture2D> normalMap (new osg::Texture2D(readPngImage(mResourcePath + "/shaders/water_nm.png")));
 
     if (normalMap->getImage())
@@ -584,9 +589,7 @@ void Water::createShaderWaterStateSet(osg::Node* node, Reflection* reflection, R
 
     shaderStateset->addUniform(mRainIntensityUniform.get());
 
-    osg::ref_ptr<osg::Program> program (new osg::Program);
-    program->addShader(vertexShader);
-    program->addShader(fragmentShader);
+    osg::ref_ptr<osg::Program> program = shaderMgr.getProgram(vertexShader, fragmentShader);
     shaderStateset->setAttributeAndModes(program, osg::StateAttribute::ON);
 
     node->setStateSet(shaderStateset);
