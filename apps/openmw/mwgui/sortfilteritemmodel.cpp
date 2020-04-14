@@ -63,13 +63,13 @@ namespace
         auto rightBartered = right.mType == MWGui::ItemStack::Type_Barter;
         auto leftBartered = left.mType == MWGui::ItemStack::Type_Barter;
         if (rightBartered != leftBartered) {
-            return rightBartered;
+            return leftBartered;
         }
 
         auto rightEquipped = store.isEquipped(right.mBase);
         auto leftEquipped = store.isEquipped(left.mBase);
         if (rightEquipped != leftEquipped) {
-            return rightEquipped;
+            return leftEquipped;
         }
 
         std::string leftName = Misc::StringUtils::lowerCase(left.mBase.getClass().getName(left.mBase));
