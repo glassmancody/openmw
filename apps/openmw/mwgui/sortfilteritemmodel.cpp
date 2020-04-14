@@ -60,23 +60,21 @@ namespace
         MWWorld::InventoryStore& store = player.getClass().getInventoryStore(player);
 
         // show barter items, then equipped items when sorting by name in ascending order
-        if (left.mType == MWGui::ItemStack::Type_Barter)
-            return true;
-        if (right.mType == MWGui::ItemStack::Type_Barter)
-            return false; 
+        auto rightBartered = right.mType == MWGui::ItemStack::Type_Barter;
+        auto leftBartered = left.mType == MWGui::ItemStack::Type_Barter;
+        if (rightBartered != leftBartered) {
+            return leftBartered;
+        }
 
-        if (store.isEquipped(right.mBase))
-            return true; 
-        if (store.isEquipped(left.mBase))
-            return false;
+        auto rightEquipped = store.isEquipped(right.mBase);
+        auto leftEquipped = store.isEquipped(left.mBase);
+        if (rightEquipped != leftEquipped) {
+            return leftEquipped;
+        }
 
         std::string leftName = Misc::StringUtils::lowerCase(left.mBase.getClass().getName(left.mBase));
         std::string rightName = Misc::StringUtils::lowerCase(right.mBase.getClass().getName(right.mBase));
-        int result = leftName.compare(rightName);
-        if (result != 0)
-            return result < 0;
-        else 
-            return false;  
+        return leftName.compare(rightName) < 0; 
     }
 
     bool CompareValue(const MWGui::ItemStack& left, const MWGui::ItemStack& right)
