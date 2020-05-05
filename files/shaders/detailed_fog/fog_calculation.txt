@@ -1,0 +1,66 @@
+==================================================
+fog calculation:
+==================================================
+
+
+distance unit is hectometer instead of cm (world unit), to avoid floating point precision errors
+
+log := natural logarithm
+
+
+visibility calculation:
+==================================================
+
+visibility(0.0 - 1.0) at a given distance from camera:
+----------------------------------------------------------
+visibility := exp(-(density * distance))
+----------------------------------------------------------
+=> -(density * distance) = log(visibility)
+=> density = log(visibility) / (-distance)
+
+
+=> density at a given distance and visibility:
+-----------------------------------------------------------
+density = log(visibility) * (-distance)
+-----------------------------------------------------------
+
+
+
+relative density calculation (density decreases with altitude)
+===================================================================
+
+relative density (to the base height) at a given height above the base height:
+--------------------------------------------------------------------------------
+relative_density := (0.5 * falloff) ^ height_delta
+--------------------------------------------------------------------------------
+=> falloff ^ height_delta = relative_density / (0.5 ^ height_delta)
+=> falloff = (relative_density / (0.5 ^ height_delta)) ^ (1 / height_delta)
+
+
+=> falloff at a given relative density and height delta:
+--------------------------------------------------------------------------
+falloff = (relative_density / (0.5 ^ height_delta)) ^ (1 / height_delta)
+--------------------------------------------------------------------------
+
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+relative density calculation (density decreases with altitude)
+===================================================================
+
+relative density (to the base height) at a given height above the base height (FOG_DENSITY_SCALE):
+--------------------------------------------------------------------------------
+relative_density := exp(falloff * -height_delta)
+--------------------------------------------------------------------------------
+=> falloff * -height_delta = log(relative_density)
+=> falloff = log(relative_density) / (-height_delta)
+
+
+=> falloff with a given relative density and height delta (FOG_LAYER_FALLOFF):
+--------------------------------------------------------------------------
+falloff = log(relative_density) / (-height_delta)
+--------------------------------------------------------------------------
+
+
+FOG_DENSITY_SCALE_ANTIDERIVATIVE = FOG_DENSITY_SCALE

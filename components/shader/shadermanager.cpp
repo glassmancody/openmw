@@ -314,7 +314,7 @@ namespace Shader
             shader->setShaderSource(shaderSource);
             // Assign a unique name to allow the SharedStateManager to compare shaders efficiently
             static unsigned int counter = 0;
-            shader->setName(std::to_string(counter++));
+            shader->setName(std::to_string(counter++) + "_" + shaderTemplate);
 
             shaderIt = mShaders.insert(std::make_pair(std::make_pair(templateName, defines), shader)).first;
         }
@@ -323,16 +323,27 @@ namespace Shader
 
     osg::ref_ptr<osg::Program> ShaderManager::getProgram(osg::ref_ptr<osg::Shader> vertexShader, osg::ref_ptr<osg::Shader> fragmentShader)
     {
-        OpenThreads::ScopedLock<OpenThreads::Mutex> lock(mMutex);
-        ProgramMap::iterator found = mPrograms.find(std::make_pair(vertexShader, fragmentShader));
-        if (found == mPrograms.end())
         {
-            osg::ref_ptr<osg::Program> program (new osg::Program);
-            program->addShader(vertexShader);
-            program->addShader(fragmentShader);
-            found = mPrograms.insert(std::make_pair(std::make_pair(vertexShader, fragmentShader), program)).first;
+            OpenThreads::ScopedLock<OpenThreads::Mutex> lock(mMutex);
+            ProgramMap::iterator found = mPrograms.find(std::make_pair(vertexShader, fragmentShader));
+            if (found != mPrograms.end())
+                return found->second;
         }
-        return found->second;
+
+        std::map<std::string, std::string> fogDefineMap;
+        osg::ref_ptr<osg::Shader> fogShader = getShader("fog.glsl", fogDefineMap, osg::Shader::FRAGMENT);
+
+        OpenThreads::ScopedLock<OpenThreads::Mutex> lock(mMutex);
+
+        osg::ref_ptr<osg::Program> program (new osg::Program);
+        program->setName(vertexShader->getName() + " " + fragmentShader->getName());
+        program->addShader(vertexShader);
+        program->addShader(fragmentShader);
+        if (fogShader)
+            program->addShader(fogShader);
+        mPrograms.insert(std::make_pair(std::make_pair(vertexShader, fragmentShader), program)).first;
+
+        return program;
     }
 
     ShaderManager::DefineMap ShaderManager::getGlobalDefines()

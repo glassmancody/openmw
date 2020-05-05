@@ -8,6 +8,7 @@
 #include <osg/ref_ptr>
 #include <osg/Vec4f>
 #include <osg/Uniform>
+#include <osg/Group>
 
 namespace osg
 {
@@ -45,6 +46,19 @@ namespace MWRender
     class RainFader;
     class AlphaFader;
     class UnderwaterSwitchCallback;
+
+    namespace SkyObjectType
+    {
+        enum
+        {
+            SUN,
+            SUN_FLASH,
+            MOON,
+            CLOUDS,
+            ATMOSPHERE,
+            ATMOSPHERE_NIGHT
+        };
+    }
 
     struct WeatherResult
     {
@@ -162,7 +176,6 @@ namespace MWRender
 
         void setStormDirection(const osg::Vec3f& direction);
 
-        void setSunDirection(const osg::Vec3f& direction);
 
         void setMasserState(const MoonState& state);
         void setSecundaState(const MoonState& state);
@@ -181,8 +194,21 @@ namespace MWRender
 
         void setRainIntensityUniform(osg::Uniform *uniform);
 
+        virtual void setSunDirection(const osg::Vec3f& direction);
+        virtual void setSunHeight(float) {}
+        virtual void setWeather(int weatherID0, int weatherID1, float transitionFactor) {}
+        virtual void setCameraPos(const osg::Vec3f& pos) {}
+
+    protected:
+        osg::Node* getRootNode() { return  mRootNode; }
+        osg::PositionAttitudeTransform* getAtmosphereNode() { return mAtmosphereNode; }
+        osg::PositionAttitudeTransform* getCloudNode() { return mCloudNode; }
+        Resource::SceneManager* getSceneManager() { return mSceneManager; }
+
+        virtual float getCloudSpeed() { return mCloudSpeed; }
+        virtual void create();
+
     private:
-        void create();
         ///< no need to call this, automatically done on first enable()
 
         void createRain();
@@ -209,6 +235,8 @@ namespace MWRender
         osg::ref_ptr<CloudUpdater> mCloudUpdater2;
         osg::ref_ptr<osg::Node> mCloudMesh;
         osg::ref_ptr<osg::Node> mCloudMesh2;
+
+        osg::ref_ptr<osg::PositionAttitudeTransform> mAtmosphereNode;
 
         osg::ref_ptr<osg::Node> mAtmosphereDay;
 

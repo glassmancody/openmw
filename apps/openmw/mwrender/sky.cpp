@@ -18,6 +18,7 @@
 #include <osg/PolygonOffset>
 #include <osg/Version>
 #include <osg/observer_ptr>
+#include <osg/ValueObject>
 
 #include <osgParticle/BoxPlacer>
 #include <osgParticle/ModularEmitter>
@@ -480,6 +481,7 @@ public:
         sunTex->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
 
         mGeom->getOrCreateStateSet()->setTextureAttributeAndModes(0, sunTex, osg::StateAttribute::ON);
+        mGeom->setUserValue<int>("skyObjectType", SkyObjectType::SUN);
 
         osg::ref_ptr<osg::Group> queryNode (new osg::Group);
         // Need to render after the world geometry so we can correctly test for occlusions
@@ -575,6 +577,7 @@ private:
         // Set up the query geometry to match the actual sun's rendering shape. osg::OcclusionQueryNode wasn't originally intended to allow this,
         // normally it would automatically adjust the query geometry to match the sub graph's bounding box. The below hack is needed to
         // circumvent this.
+        queryGeom->setUserValue<int>("skyObjectType", SkyObjectType::SUN);
         queryGeom->setVertexArray(mGeom->getVertexArray());
         queryGeom->setTexCoordArray(0, mGeom->getTexCoordArray(0), osg::Array::BIND_PER_VERTEX);
         queryGeom->removePrimitiveSet(0, queryGeom->getNumPrimitiveSets());
@@ -590,6 +593,11 @@ private:
 #endif
 
         osg::StateSet* queryStateSet = new osg::StateSet;
+
+        osg::ref_ptr<osg::AlphaFunc> alphaFunc (new osg::AlphaFunc);
+        alphaFunc->setFunction(osg::AlphaFunc::GREATER, 0.8);
+        queryStateSet->setAttributeAndModes(alphaFunc, osg::StateAttribute::ON);
+
         if (queryVisible)
         {
             osg::ref_ptr<osg::Depth> depth (new osg::Depth);
@@ -626,6 +634,7 @@ private:
         mTransform->addChild(transform);
 
         osg::ref_ptr<osg::Geometry> geom = createTexturedQuad();
+        geom->setUserValue<int>("skyObjectType", SkyObjectType::SUN_FLASH);
         transform->addChild(geom);
 
         osg::StateSet* stateset = geom->getOrCreateStateSet();
@@ -947,6 +956,7 @@ public:
         setPhase(MoonState::Phase_Full);
         setVisible(true);
 
+        mGeom->setUserValue<int>("skyObjectType", SkyObjectType::MOON);
         mGeom->addUpdateCallback(mUpdater);
     }
 
@@ -1169,12 +1179,30 @@ void SkyManager::create()
 {
     assert(!mCreated);
 
-    mAtmosphereDay = mSceneManager->getInstance("meshes/sky_atmosphere.nif", mEarlyRenderBinRoot);
+    mAtmosphereNode = new osg::PositionAttitudeTransform;
+    mEarlyRenderBinRoot->addChild(mAtmosphereNode);
+    mAtmosphereDay = mSceneManager->getInstance("meshes/sky_atmosphere.nif", mAtmosphereNode);
     ModVertexAlphaVisitor modAtmosphere(0);
     mAtmosphereDay->accept(modAtmosphere);
 
     mAtmosphereUpdater = new AtmosphereUpdater;
     mAtmosphereDay->addUpdateCallback(mAtmosphereUpdater);
+    mAtmosphereDay->setUserValue<int>("skyObjectType", SkyObjectType::ATMOSPHERE);
+
+//     if (false)
+//     {
+//         osg::ref_ptr<osg::PositionAttitudeTransform> floorTransform = new osg::PositionAttitudeTransform;
+//         {
+//             const float floorScale = 100;
+//             floorTransform->setScale(osg::Vec3(floorScale, floorScale, 1));
+//             osg::Quat quat(0,0,-1,1);
+//             floorTransform->setAttitude(quat);
+//         }
+//         osg::ref_ptr<osg::Node> floor = createTexturedQuad();
+//         floorTransform->addChild(floor);
+//         mEarlyRenderBinRoot->addChild(floorTransform);
+//         floor->addUpdateCallback(mAtmosphereUpdater);
+//     }
 
     mAtmosphereNightNode = new osg::PositionAttitudeTransform;
     mAtmosphereNightNode->setNodeMask(0);
@@ -1190,6 +1218,7 @@ void SkyManager::create()
     atmosphereNight->accept(modStars);
     mAtmosphereNightUpdater = new AtmosphereNightUpdater(mSceneManager->getImageManager());
     atmosphereNight->addUpdateCallback(mAtmosphereNightUpdater);
+    atmosphereNight->setUserValue<int>("skyObjectType", SkyObjectType::ATMOSPHERE_NIGHT);
 
     mSun.reset(new Sun(mEarlyRenderBinRoot, *mSceneManager->getImageManager()));
 
@@ -1198,12 +1227,14 @@ void SkyManager::create()
 
     mCloudNode = new osg::PositionAttitudeTransform;
     mEarlyRenderBinRoot->addChild(mCloudNode);
+
     mCloudMesh = mSceneManager->getInstance("meshes/sky_clouds_01.nif", mCloudNode);
     ModVertexAlphaVisitor modClouds(1);
     mCloudMesh->accept(modClouds);
     mCloudUpdater = new CloudUpdater;
     mCloudUpdater->setOpacity(1.f);
     mCloudMesh->addUpdateCallback(mCloudUpdater);
+    mCloudMesh->setUserValue<int>("skyObjectType", SkyObjectType::CLOUDS);
 
     mCloudMesh2 = mSceneManager->getInstance("meshes/sky_clouds_01.nif", mCloudNode);
     mCloudMesh2->accept(modClouds);
@@ -1211,6 +1242,7 @@ void SkyManager::create()
     mCloudUpdater2->setOpacity(0.f);
     mCloudMesh2->addUpdateCallback(mCloudUpdater2);
     mCloudMesh2->setNodeMask(0);
+    mCloudMesh2->setUserValue<int>("skyObjectType", SkyObjectType::CLOUDS);
 
     osg::ref_ptr<osg::Depth> depth = new osg::Depth;
     depth->setWriteMask(false);
@@ -1621,7 +1653,7 @@ void SkyManager::update(float duration)
         mCloudNode->setAttitude(osg::Quat());
 
     // UV Scroll the clouds
-    mCloudAnimationTimer += duration * mCloudSpeed * 0.003;
+    mCloudAnimationTimer += duration * getCloudSpeed() * 0.003;
     mCloudUpdater->setAnimationTimer(mCloudAnimationTimer);
     mCloudUpdater2->setAnimationTimer(mCloudAnimationTimer);
 

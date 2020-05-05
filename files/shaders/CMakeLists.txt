@@ -2,6 +2,8 @@ if (NOT DEFINED OPENMW_SHADERS_ROOT)
     return()
 endif()
 
+add_subdirectory(detailed_fog)
+
 # Copy resource files into the build directory
 set(SDIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(DDIRRELATIVE resources/shaders)
