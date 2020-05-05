@@ -356,15 +356,12 @@ namespace MWRender
         defaultMat->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4f(0.f, 0.f, 0.f, 0.f));
         sceneRoot->getOrCreateStateSet()->setAttribute(defaultMat);
 
-<<<<<<< HEAD
         mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager()));
 
         mSky->setCamera(mViewer->getCamera());
         mSky->setRainIntensityUniform(mWater->getRainIntensityUniform());
-=======
         sceneRoot->setNodeMask(Mask_Scene);
         sceneRoot->setName("Scene Root");
->>>>>>> fe4fc5e4dcfe40b329e8e1956ad415cf88dd734f
 
         source->setStateSetModes(*mRootNode->getOrCreateStateSet(), osg::StateAttribute::ON);
 

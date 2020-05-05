@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "geometry": "cpp",
-        "ref_ptr": "cpp"
+        "ref_ptr": "cpp",
+        "texenvcombine": "cpp"
     }
 }

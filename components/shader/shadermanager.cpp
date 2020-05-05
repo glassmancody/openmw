@@ -314,7 +314,7 @@ namespace Shader
             shader->setShaderSource(shaderSource);
             // Assign a unique name to allow the SharedStateManager to compare shaders efficiently
             static unsigned int counter = 0;
-            shader->setName(std::to_string(counter++) + "_" + shaderTemplate);
+            shader->setName(std::to_string(counter++) + "_" + templateName);
 
             shaderIt = mShaders.insert(std::make_pair(std::make_pair(templateName, defines), shader)).first;
         }
