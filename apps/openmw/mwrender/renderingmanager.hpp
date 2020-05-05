@@ -42,6 +42,7 @@ namespace osgViewer
 namespace ESM
 {
     struct Cell;
+    struct RefNum;
 }
 
 namespace Terrain
@@ -83,6 +84,7 @@ namespace MWRender
     class NavMesh;
     class ActorsPaths;
     class RecastMesh;
+    class ObjectPaging;
 
     class RenderingManager : public MWRender::RenderingInterface
     {
@@ -236,6 +238,10 @@ namespace MWRender
 
         void setNavMeshNumber(const std::size_t value);
 
+        void setActiveGrid(const osg::Vec4i &grid);
+
+        void pagingEnableObject(const ESM::RefNum & refnum, bool enabled);
+
     private:
         void updateProjectionMatrix();
         void updateTextureFiltering();
@@ -274,6 +280,7 @@ namespace MWRender
         std::unique_ptr<Water> mWater;
         std::unique_ptr<Terrain::World> mTerrain;
         TerrainStorage* mTerrainStorage;
+        std::unique_ptr<ObjectPaging> mObjectPaging;
         std::unique_ptr<SkyManager> mSky;
         std::unique_ptr<EffectManager> mEffectManager;
         std::unique_ptr<SceneUtil::ShadowManager> mShadowManager;

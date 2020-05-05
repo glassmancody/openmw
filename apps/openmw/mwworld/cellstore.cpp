@@ -141,6 +141,8 @@ namespace
                 {
                     // overwrite existing reference
                     iter->load (state);
+                    if (!iter->mData.isEnabled())
+                        MWBase::Environment::get().getWorld()->disable(MWWorld::Ptr(&*iter));
                     return;
                 }
 
