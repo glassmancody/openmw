@@ -7,8 +7,12 @@
 #include "../mwbase/windowmanager.hpp"
 
 #include "../mwmechanics/creaturestats.hpp"
+<<<<<<< HEAD
 #include "../mwmechanics/spellcasting.hpp"
 #include "../mwmechanics/actorutil.hpp"
+=======
+#include "../mwmechanics/spellutil.hpp"
+>>>>>>> 12833d66af150a32a439319539ca9c9c69f5481c
 
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/inventorystore.hpp"
