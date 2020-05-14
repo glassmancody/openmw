@@ -43,6 +43,8 @@ varying vec2 specularMapUV;
 #endif
 
 varying float depth;
+varying float euclideanDepth;
+varying float linearDepth;
 
 #define PER_PIXEL_LIGHTING (@normalMap || @forcePPL)
 
@@ -54,6 +56,9 @@ varying vec4 passColor;
 varying vec3 passViewPos;
 varying vec3 passNormal;
 
+#include "shadows_fragment.glsl"
+#include "helpsettings.glsl"
+#include "settings.glsl"
 #include "lighting.glsl"
 #include "parallax.glsl"
 
@@ -114,10 +119,13 @@ void main()
     gl_FragData[0].xyz = mix(gl_FragData[0].xyz, decalTex.xyz, decalTex.a);
 #endif
 
+    float shadowing = unshadowedLightRatio(linearDepth);
+
 #if !PER_PIXEL_LIGHTING
     gl_FragData[0] *= lighting;
 #else
-    gl_FragData[0] *= doLighting(passViewPos, normalize(viewNormal), passColor);
+	//gl_FragData[0] *= vec4(2.0 * vec3(3.14), 1.0) * (doLighting(passViewPos, normalize(viewNormal), passColor, shadowing * saturate(3.0)));
+    gl_FragData[0] *= vec4(1.2 * vec3(1.0), 1.0) *doLighting(passViewPos, normalize(viewNormal), passColor, shadowing* saturate(3.0));
 #endif
 
 #if @emissiveMap
@@ -148,8 +156,8 @@ void main()
     float shininess = gl_FrontMaterial.shininess;
     vec3 matSpec = gl_FrontMaterial.specular.xyz;
 #endif
-
-    gl_FragData[0].xyz += getSpecular(normalize(viewNormal), normalize(passViewPos.xyz), shininess, matSpec);
+    gl_FragData[0].xyz += 0.318 * getSpecular(normalize(viewNormal), normalize(passViewPos.xyz), shininess, matSpec) * shadowing;
+	gl_FragData[0].xyz = SpecialContrast(gl_FragData[0].xyz, mix(CONTRAST, CONTRAST, gl_LightSource[0].diffuse.x));
 
     applyFog();
 }

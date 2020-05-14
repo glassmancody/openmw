@@ -2,6 +2,25 @@
     "files.associations": {
         "geometry": "cpp",
         "ref_ptr": "cpp",
-        "texenvcombine": "cpp"
+        "texenvcombine": "cpp",
+        "*.ipp": "cpp",
+        "array": "cpp",
+        "hash_map": "cpp",
+        "deque": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "valarray": "cpp",
+        "mixinvector": "cpp",
+        "guieventadapter": "cpp",
+        "texture2d": "cpp",
+        "uniform": "cpp",
+        "texture": "cpp",
+        "stateset": "cpp",
+        "positionattitudetransform": "cpp"
     }
 }

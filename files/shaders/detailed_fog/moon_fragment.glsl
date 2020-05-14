@@ -22,5 +22,7 @@ void main(void)
   objPos *= 15000;
   worldPos = objPos + world.cameraPos;
 
+  gl_FragData[0].z *= 10.0;
+
   applyFog(world.cameraPos, worldPos);
 }

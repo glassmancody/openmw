@@ -4,7 +4,7 @@
 varying vec3 passViewPos;
 uniform mat4 osg_ViewMatrixInverse;
 
-
+#include "settings.glsl"
 #include "world.glsl"
 #include "sunlight.glsl"
 
@@ -130,6 +130,8 @@ void main(void)
 // 
 //         
 // #endif
+
+    gl_FragData[0].xyz = mix(gl_FragData[0].xyz, ATMOSPHERE_TINT, ATMOSPHERE_MIX);
 
     applyFog(world.cameraPos, worldPos);
 

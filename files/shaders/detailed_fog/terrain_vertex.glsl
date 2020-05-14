@@ -1,6 +1,8 @@
 #version 120
 
 varying vec2 uv;
+varying float euclideanDepth;
+varying float linearDepth;
 
 #define PER_PIXEL_LIGHTING (@normalMap || @forcePPL)
 
@@ -12,9 +14,9 @@ centroid varying vec4 passColor;
 varying vec3 passViewPos;
 varying vec3 passNormal;
 
+#include "shadows_vertex.glsl"
 #include "lighting.glsl"
 #include "sunlight_calculation.glsl"
-
 
 void main(void)
 {
@@ -25,8 +27,11 @@ void main(void)
     vec4 viewPos = (gl_ModelViewMatrix * gl_Vertex);
     gl_ClipVertex = viewPos;
 
-#if !PER_PIXEL_LIGHTING
+    euclideanDepth = length(viewPos.xyz);
+    linearDepth = gl_Position.z;
+
     vec3 viewNormal = normalize((gl_NormalMatrix * gl_Normal).xyz);
+#if !PER_PIXEL_LIGHTING
     lighting = doLighting(viewPos.xyz, viewNormal, gl_Color);
 #else
     passColor = gl_Color;
@@ -35,4 +40,6 @@ void main(void)
     passViewPos = viewPos.xyz;
 
     uv = gl_MultiTexCoord0.xy;
+
+    setupShadowCoords(viewPos, viewNormal);
 }

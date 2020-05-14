@@ -1,5 +1,6 @@
 #version 120
 
+#include "settings.glsl"
 #include "world.glsl"
 #include "sunlight.glsl"
 
@@ -13,7 +14,7 @@ void applyFog();
 
 void main(void)
 {
-    const float scale = 4.0;
+    const float scale = CLOUD_SCALE;
 
     gl_FragData[0] = texture2D(diffuseMap, diffuseMapUV * scale);
 

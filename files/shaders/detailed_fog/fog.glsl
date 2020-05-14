@@ -1,5 +1,6 @@
 #version 130
 
+#include "settings.glsl"
 #include "world.glsl"
 
 vec3 applyPerception(vec3 color);
@@ -12,10 +13,10 @@ varying float sunBrightness;
 
 uniform bool isSunFlash = false;
 uniform bool isVisibleQuery = false;
-uniform bool isWaterReflection = false;
-uniform bool isWaterRefraction = false;
+uniform bool isWaterReflection = true;
+uniform bool isWaterRefraction = true;
 uniform bool isClouds = false;
-uniform bool isAtmosphere = false;
+uniform bool isAtmosphere = true;
 uniform mat4 osg_ViewMatrixInverse;
 
 uniform sampler2DRect sedimentColorMap;
@@ -38,8 +39,8 @@ varying vec3 passViewPos;
 
 const float PI = 3.1415926535897932384626433832795;
 
-const float atmosphereVisibility = 250000.0;
-const float atmosphereDensityFalloff = 2500.0;
+const float atmosphereVisibility = ATMOSPHERE_VISIBILITY;
+const float atmosphereDensityFalloff = ATMOSPHERE_FALLOFF;
 
 
 float miePhase(vec3 view_dir, vec3 light_dir, float g)
@@ -277,7 +278,7 @@ void applyFogInternal(vec3 cameraPos, vec3 worldPos)
 
     vec3 rayleighInput = ambientLight;
 
-    vec3 rayleighColor = vec3(0.1, 0.2, 0.9);
+    vec3 rayleighColor = RAYLEIGH_COLOUR;
 
 #if 1
     if (isAtmosphere)
@@ -308,14 +309,13 @@ void applyFogInternal(vec3 cameraPos, vec3 worldPos)
 #if 1
     atmosphereDistance = (atmosphereDistance - highAtmosphereDistance) * (length(rayleighInput)/length(vec3(1))) + highAtmosphereDistance;
 
-
     rayleighColor *= rayleighInput;
 
     float atmosphereHaze = 0.15;
     atmosphereHaze = 0.5;
 
-    vec3 diffuseScatteringColorDark = vec3(0.15, 0.75, 1.0);
-    vec3 diffuseScatteringColorBright = vec3(0.55, 0.8, 1.0);
+    vec3 diffuseScatteringColorDark = SCATTER_DARK;
+    vec3 diffuseScatteringColorBright = SCATTER_BRIGHT;
 
     diffuseScatteringColorDark *= rayleighInput;
     diffuseScatteringColorBright *= rayleighInput;
@@ -388,7 +388,7 @@ void applyFogInternal(vec3 cameraPos, vec3 worldPos)
     }
 
     // fog
-    vec3 fogColor = vec3(0.7, 0.8, 0.9);
+    vec3 fogColor = FOG_COLOUR;
     
     fogColor *= 1.1;
     

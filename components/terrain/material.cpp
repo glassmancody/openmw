@@ -7,7 +7,14 @@
 #include <osg/TexMat>
 #include <osg/BlendFunc>
 
+#include <osgDB/ReadFile>
+
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/fstream.hpp>
+
 #include <components/shader/shadermanager.hpp>
+
+#include <components/debug/debuglog.hpp>
 
 #include <mutex>
 
@@ -170,6 +177,27 @@ namespace
 
 namespace Terrain
 {
+
+    osg::ref_ptr<osg::Image> readPngImage (const std::string& file)
+    {
+        // use boost in favor of osgDB::readImage, to handle utf-8 path issues on Windows
+        boost::filesystem::ifstream inStream;
+        inStream.open(file, std::ios_base::in | std::ios_base::binary);
+        if (inStream.fail())
+            Log(Debug::Error) << "Error: Failed to open " << file;
+        osgDB::ReaderWriter* reader = osgDB::Registry::instance()->getReaderWriterForExtension("png");
+        if (!reader)
+        {
+            Log(Debug::Error) << "Error: Failed to read " << file << ", no png readerwriter found";
+            return osg::ref_ptr<osg::Image>();
+        }
+        osgDB::ReaderWriter::ReadResult result = reader->readImage(inStream);
+        if (!result.success())
+            Log(Debug::Error) << "Error: Failed to read " << file << ": " << result.message() << " code " << result.status();
+
+        return result.getImage();
+    }
+
     std::vector<osg::ref_ptr<osg::StateSet> > createPasses(bool useShaders, Shader::ShaderManager* shaderManager, const std::vector<TextureLayer> &layers,
                                                            const std::vector<osg::ref_ptr<osg::Texture2D> > &blendmaps, int blendmapScale, float layerTileSize)
     {
@@ -240,6 +268,7 @@ namespace Terrain
 
                 stateset->setAttributeAndModes(shaderManager->getProgram(vertexShader, fragmentShader));
                 stateset->addUniform(new osg::Uniform("colorMode", 2));
+                stateset->addUniform(new osg::Uniform("causticMap", 3));
             }
             else
             {

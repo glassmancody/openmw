@@ -13,6 +13,9 @@ uniform sampler2D blendMap;
 #endif
 
 
+varying float euclideanDepth;
+varying float linearDepth;
+
 #define PER_PIXEL_LIGHTING (@normalMap || @forcePPL)
 
 #if !PER_PIXEL_LIGHTING
@@ -23,6 +26,9 @@ centroid varying vec4 passColor;
 varying vec3 passViewPos;
 varying vec3 passNormal;
 
+#include "helpsettings.glsl"
+#include "settings.glsl"
+#include "shadows_fragment.glsl"
 #include "lighting.glsl"
 #include "parallax.glsl"
 
@@ -65,10 +71,13 @@ void main()
     gl_FragData[0].a *= texture2D(blendMap, blendMapUV).a;
 #endif
 
+    float shadowing = unshadowedLightRatio(linearDepth);
+
 #if !PER_PIXEL_LIGHTING
     gl_FragData[0] *= lighting;
 #else
-    gl_FragData[0] *= doLighting(passViewPos, normalize(viewNormal), passColor);
+    //gl_FragData[0] *= doLighting(passViewPos, normalize(viewNormal), passColor, shadowing);
+    gl_FragData[0] *= vec4(1.2 * vec3(1.0), 1.0) *doLighting(passViewPos, normalize(viewNormal), passColor, shadowing* saturate(3.0));
 #endif
 
 #if @specularMap
@@ -78,8 +87,9 @@ void main()
     float shininess = gl_FrontMaterial.shininess;
     vec3 matSpec = gl_FrontMaterial.specular.xyz;
 #endif
-
-    gl_FragData[0].xyz += getSpecular(normalize(viewNormal), normalize(passViewPos), shininess, matSpec);
+    gl_FragData[0].xyz += 0.318 * getSpecular(normalize(viewNormal), normalize(passViewPos), shininess, matSpec) * shadowing;
+    //gl_FragData[0].xyz += getSpecular(normalize(viewNormal), normalize(passViewPos), shininess, matSpec) * shadowing;
+    gl_FragData[0].xyz = SpecialContrast(gl_FragData[0].xyz, mix(CONTRAST, CONTRAST, gl_LightSource[0].diffuse.x));
 
     applyFog();
 }
