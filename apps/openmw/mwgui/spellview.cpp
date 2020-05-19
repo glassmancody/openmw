@@ -125,10 +125,7 @@ namespace MWGui
     {
         if (!mModel.get())
             return;
-
-        mModel->update();
-
-        //update();
+        update();
     }
 
     ItemListWidgetHeader* SpellView::getHeader()

@@ -404,6 +404,7 @@ namespace MWGui
 
     void SpellWindow::cycle(bool next)
     {
+
         MWWorld::Ptr player = MWMechanics::getPlayer();
 
         if (MWBase::Environment::get().getMechanicsManager()->isAttackingOrSpell(player))
@@ -413,7 +414,7 @@ namespace MWGui
         if (stats.isParalyzed() || stats.getKnockedDown() || stats.isDead() || stats.getHitRecovery())
             return;
 
-        mSpellView->setModel(new SpellModel(MWMechanics::getPlayer(), ""));
+        updateSpells();
 
         SpellModel::ModelIndex selected = mSpellView->getModel()->getSelectedIndex();
         if (selected < 0)

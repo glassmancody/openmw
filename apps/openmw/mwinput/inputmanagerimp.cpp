@@ -480,7 +480,8 @@ namespace MWInput
             return;
         }
 
-        if (MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible())
+        if (MWBase::Environment::get().getWindowManager()->getQuickLoot()->isVisible() && 
+            Settings::Manager::getBool("enable quickloot", "MorroUI"))
         {
             static const std::vector<int> quickLootKeys =  {
                 SDL_GetScancodeFromName(Settings::Manager::getString("key quickloot take", "MorroUI").c_str()),

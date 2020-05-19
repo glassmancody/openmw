@@ -21,6 +21,7 @@
 
 #include "../mwmechanics/actorutil.hpp"
 #include "../mwmechanics/spellcasting.hpp"
+#include "../mwmechanics/spellutil.hpp"
 
 #include "../mwworld/esmstore.hpp"
 #include "../mwworld/class.hpp"
