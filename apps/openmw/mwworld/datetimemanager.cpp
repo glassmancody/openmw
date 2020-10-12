@@ -35,6 +35,9 @@ namespace MWWorld
 {
     void DateTimeManager::setup(Globals& globalVariables)
     {
+
+        globalVariables["timescale"].setFloat(0.0);
+
         mGameHour = globalVariables["gamehour"].getFloat();
         mDaysPassed = globalVariables["dayspassed"].getInteger();
         mDay = globalVariables["day"].getInteger();

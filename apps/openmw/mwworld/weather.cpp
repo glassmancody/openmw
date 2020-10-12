@@ -5,6 +5,9 @@
 #include <components/esm/esmreader.hpp>
 #include <components/esm/esmwriter.hpp>
 #include <components/esm/weatherstate.hpp>
+#include <components/resource/resourcesystem.hpp>
+#include <components/config/gamesettings.hpp>
+#include <components/resource/scenemanager.hpp>
 
 #include "../mwbase/environment.hpp"
 #include "../mwbase/soundmanager.hpp"
@@ -524,7 +527,7 @@ WeatherManager::WeatherManager(MWRender::RenderingManager& rendering, MWWorld::E
     , mSunsetDuration(Fallback::Map::getFloat("Weather_Sunset_Duration"))
     , mSunPreSunsetTime(Fallback::Map::getFloat("Weather_Sun_Pre-Sunset_Time"))
     , mNightFade(0, 0, 0, 1)
-    , mHoursBetweenWeatherChanges(Fallback::Map::getFloat("Weather_Hours_Between_Weather_Changes"))
+    , mHoursBetweenWeatherChanges(0) //Fallback::Map::getFloat("Weather_Hours_Between_Weather_Changes"))
     , mRainSpeed(Fallback::Map::getFloat("Weather_Precip_Gravity"))
     , mUnderwaterFog(Fallback::Map::getFloat("Water_UnderwaterSunriseFog"),
                     Fallback::Map::getFloat("Water_UnderwaterDayFog"),
@@ -615,7 +618,7 @@ void WeatherManager::changeWeather(const std::string& regionID, const unsigned i
     // - If multiple calls to ChangeWeather are made while paused (console up), only the last call will be used,
     //   meaning that if there was no transition in progress, only the last ChangeWeather will be processed.
     // If the region isn't current, Morrowind will store the new weather for the region in question.
-
+    
     if(weatherID < mWeatherSettings.size())
     {
         std::string lowerCaseRegionID = Misc::StringUtils::lowerCase(regionID);
@@ -626,6 +629,7 @@ void WeatherManager::changeWeather(const std::string& regionID, const unsigned i
             regionalWeatherChanged(it->first, it->second);
         }
     }
+    forceWeather(weatherID);
 }
 
 void WeatherManager::modRegion(const std::string& regionID, const std::vector<char>& chances)
@@ -781,7 +785,6 @@ void WeatherManager::update(float duration, bool paused, const TimeStamp& time, 
             -0.268f, // approx tan( -15 degrees )
             static_cast<float>(sin(theta)));
         mRendering.setSunDirection( final * -1 );
-    }
 
     float underwaterFog = mUnderwaterFog.getValue(time.getHour(), mTimeSettings, "Fog");
 
@@ -795,16 +798,57 @@ void WeatherManager::update(float duration, bool paused, const TimeStamp& time, 
         glareFade = 1.f - (time.getHour() - peakHour) / (mTimeSettings.mNightStart - peakHour);
 
     mRendering.getSkyManager()->setGlareTimeOfDayFade(glareFade);
-
+    
     mRendering.getSkyManager()->setMasserState(mMasser.calculateState(time));
     mRendering.getSkyManager()->setSecundaState(mSecunda.calculateState(time));
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  static std::map<int, std::string> idmap = {
+        {0, "Clear"},
+        {1, "Cloudy"},
+        {2, "Foggy"},
+        {3, "Overcast"},
+        {4, "Rain"},
+        {5, "Thunderstorm"},
+        {6, "Ashstorm"},
+        {7, "Blight"},
+        {8, "Snow"},
+        {9, "Blizzard"}
+    };
+
+    std::string timestr = "Day"; 
+
+    if (is_night)
+        timestr = "Night";
+    else if (adjustedHour >= mSunriseTime && adjustedHour <= (mSunriseTime + mSunriseDuration) )
+        timestr = "Sunrise";
+    else if (adjustedHour >= mSunsetTime && adjustedHour <= (mSunsetTime + mSunsetDuration) )
+        timestr = "Sunset";
+
+    int curr_weather = MWBase::Environment::get().getWorld()->getCurrentWeather();
+    std::string query = "Weather_" + idmap[curr_weather] + "_Fog_" + timestr + "_Color";
+    osg::Vec4f res = mRendering.getResourceSystem()->getGameSettings()->getWeatherColor(query);
+    mResult.mFogColor = res;
+    query = "Weather_" + idmap[curr_weather] + "_Ambient_" + timestr + "_Color";
+    res = mRendering.getResourceSystem()->getGameSettings()->getWeatherColor(query);
+    mResult.mAmbientColor = res;
+    query = "Weather_" + idmap[curr_weather] + "_Sun_" + timestr + "_Color";
+    res = mRendering.getResourceSystem()->getGameSettings()->getWeatherColor(query);
+    mResult.mSunColor = res;
+    query = "Weather_" + idmap[curr_weather] + "_Sky_" + timestr + "_Color";
+    res = mRendering.getResourceSystem()->getGameSettings()->getWeatherColor(query);
+    mResult.mSkyColor = res;
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     mRendering.configureFog(mResult.mFogDepth, underwaterFog, mResult.mDLFogFactor,
                             mResult.mDLFogOffset/100.0f, mResult.mFogColor);
     mRendering.setAmbientColour(mResult.mAmbientColor);
     mRendering.setSunColour(mResult.mSunColor, mResult.mSunColor * mResult.mGlareView * glareFade);
-
     mRendering.getSkyManager()->setWeather(mResult);
+    
+    }
 
     // Play sounds
     if (mPlayingSoundID != mResult.mAmbientLoopSoundID)

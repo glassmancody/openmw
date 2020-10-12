@@ -281,6 +281,7 @@ namespace MWWorld
          * @param ID of the weather setting to shift to
          */
         void changeWeather(const std::string& regionID, const unsigned int weatherID);
+        void forceWeather(const int weatherID);
         void modRegion(const std::string& regionID, const std::vector<char>& chances);
         void playerTeleported(const std::string& playerRegion, bool isExterior);
 
@@ -369,7 +370,6 @@ namespace MWWorld
         bool updateWeatherTime();
         bool updateWeatherRegion(const std::string& playerRegion);
         void updateWeatherTransitions(const float elapsedRealSeconds);
-        void forceWeather(const int weatherID);
 
         bool inTransition();
         void addWeatherTransition(const int weatherID);

@@ -327,6 +327,7 @@ namespace MWWorld
             ///< \return Resulting mode
 
             void changeWeather (const std::string& region, const unsigned int id) override;
+            void forceWeather(const unsigned int id) override;
 
             int getCurrentWeather() const override;
 

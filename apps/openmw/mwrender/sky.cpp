@@ -29,10 +29,13 @@
 #include <osgParticle/Operator>
 #include <osgParticle/ModularProgram>
 
+#include <components/debug/debuglog.hpp>
+
 #include <components/misc/rng.hpp>
 
 #include <components/misc/resourcehelpers.hpp>
 
+#include <components/resource/resourcesystem.hpp>
 #include <components/resource/scenemanager.hpp>
 #include <components/resource/imagemanager.hpp>
 
@@ -1108,8 +1111,9 @@ private:
     }
 };
 
-SkyManager::SkyManager(osg::Group* parentNode, Resource::SceneManager* sceneManager)
+SkyManager::SkyManager(osg::Group* parentNode, Resource::SceneManager* sceneManager, Resource::ResourceSystem* resourceSystem)
     : mSceneManager(sceneManager)
+    , mResourceSystem(resourceSystem)
     , mCamera(nullptr)
     , mRainIntensityUniform(nullptr)
     , mAtmosphereNightRoll(0.f)
@@ -1801,7 +1805,7 @@ void SkyManager::setWeather(const WeatherResult& weather)
         mCloudUpdater2->setOpacity(mCloudBlendFactor);
         mCloudMesh2->setNodeMask(mCloudBlendFactor > 0.f ? ~0 : 0);
     }
-
+    
     if (mCloudColour != weather.mFogColor)
     {
         osg::Vec4f clr (weather.mFogColor);

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<MyGUI type="Layout">
+    <Widget type="Window" skin="MW_Window_Pinnable" layer="Windows" position="0 0 600 800" align="Center" name="_Main">
+        
+        <Property key="MinSize" value="600 800"/>
+        <Property key="MaxSize" value="600 800"/>
+
+        <Widget type="VBox" skin="" position="0 0 600 800" align="Stretch">
+            <Property key="Padding" value="4"/>
+            <Property key="Spacing" value="8"/>
+            <Property key="AutoResize" value="true"/>
+
+            <Widget type="HBox" skin="" position="0 0 0 30" align="Top Left" name="weather0">
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                    <Property key="Caption" value="Clear"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                <Property key="Caption" value="Cloudy"/>
+                </Widget>                
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                <Property key="Caption" value="Foggy"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                    <Property key="Caption" value="Overcast"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                    <Property key="Caption" value="Rain"/>
+                </Widget>
+            </Widget>
+            <Widget type="HBox" skin="" position="0 0 0 30" align="Top Left" name="weather1">
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                    <Property key="Caption" value="Thunder"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                    <Property key="Caption" value="Ash"/>
+                </Widget>                
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                    <Property key="Caption" value="Blight"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                    <Property key="Caption" value="Snow"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30">
+                    <Property key="Caption" value="Blizzard"/>
+                </Widget>
+            </Widget>
+      
+            <Widget type="ScrollBar" skin="MW_HScroll" name="HourSlider" position="0 0 0 18">
+                <Property key="MoveToClick" value="true"/>
+                <Property key="Range" value="2400"/>
+                <Property key="Page" value="1"/>
+                <Property key="WheelPage" value="100"/>
+                <UserString key="HStretch" value="true"/>
+            </Widget>
+
+            <Widget type="HBox" skin="" position="0 0 0 30" align="Top Left">
+                <Widget type="TextBox" skin="HeaderText" position="0 0 112 30" name= "TimeText">
+                    <Property key="TextAlign" value="Center"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30" name="TimeNight">
+                    <Property key="Caption" value="Night"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30" name="TimeSunrise">
+                    <Property key="Caption" value="Sunrise"/>
+                </Widget>                
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30" name="TimeDay">
+                    <Property key="Caption" value="Day"/>
+                </Widget>
+                <Widget type="Button" skin="MW_Button" position="0 0 112 30" name="TimeSunset">
+                    <Property key="Caption" value="Sunset"/>
+                </Widget>
+            </Widget>
+
+            <Widget type="Widget" skin="" position="0 0 576 500" align="Top Left" name="Colors">
+
+                <Widget type="Widget" skin="" position="0 0 284 246" align="Top Left">
+                    <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 282 18">
+                        <Property key="Caption" value="Sky Colour"/>
+                        <Property key="TextAlign" value="Left"/>
+                    </Widget>
+                    <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 284 226" name="SkyPicker"/>
+                </Widget>
+
+                <Widget type="Widget" skin="" position="288 0 284 246" align="Top Left">
+                   <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 282 18">
+                        <Property key="Caption" value="Fog Colour"/>
+                        <Property key="TextAlign" value="Left"/>
+                    </Widget>
+                    <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 284 226" name="FogPicker"/>
+                </Widget>
+
+                <Widget type="Widget" skin="" position="0 250 284 246" align="Top Left">
+                   <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 282 18">
+                        <Property key="Caption" value="Sun Colour"/>
+                        <Property key="TextAlign" value="Left"/>
+                    </Widget>
+                    <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 284 226" name="SunPicker"/>
+                </Widget>
+
+                <Widget type="Widget" skin="" position="288 250 284 246" align="Top Left">
+                   <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 282 18">
+                        <Property key="Caption" value="Ambient Colour"/>
+                        <Property key="TextAlign" value="Left"/>
+                    </Widget>
+                    <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 284 226" name="AmbientPicker"/>
+                </Widget>
+
+            </Widget>
+
+        </Widget>
+
+    </Widget>
+</MyGUI>

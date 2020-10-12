@@ -124,6 +124,7 @@ namespace MWGui
   class DebugWindow;
   class JailScreen;
   class KeyboardNavigation;
+  class Weather;
 
   class WindowManager :
       public MWBase::WindowManager
@@ -439,6 +440,7 @@ namespace MWGui
     ScreenFader* mScreenFader;
     DebugWindow* mDebugWindow;
     JailScreen* mJailScreen;
+    Weather* mWeather;
 
     std::vector<WindowBase*> mWindows;
 

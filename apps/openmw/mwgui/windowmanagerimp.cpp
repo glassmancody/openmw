@@ -119,6 +119,8 @@
 #include "keyboardnavigation.hpp"
 #include "resourceskin.hpp"
 
+#include "weather.hpp"
+
 namespace MWGui
 {
     WindowManager::WindowManager(
@@ -162,6 +164,7 @@ namespace MWGui
       , mScreenFader(nullptr)
       , mDebugWindow(nullptr)
       , mJailScreen(nullptr)
+      , mWeather(nullptr)
       , mTranslationDataStorage (translationDataStorage)
       , mCharGen(nullptr)
       , mInputBlocker(nullptr)
@@ -218,6 +221,7 @@ namespace MWGui
         ItemChargeView::registerComponents();
         ItemWidget::registerComponents();
         SpellView::registerComponents();
+        ColorPicker::registerComponents();
         Gui::registerAllWidgets();
 
         MyGUI::FactoryManager::getInstance().registerFactory<MWGui::Controllers::ControllerFollowMouse>("Controller");
@@ -442,6 +446,9 @@ namespace MWGui
         mBlindnessFader = new ScreenFader("black");
         mWindows.push_back(mBlindnessFader);
 
+        mWeather = new Weather(mResourceSystem);
+        mWindows.push_back(mWeather);
+
         // fall back to player_hit_01.dds if bm_player_hit_01.dds is not available
         std::string hitFaderTexture = "textures\\bm_player_hit_01.dds";
         const std::string hitFaderLayout = "openmw_screen_fader_hit.layout";
@@ -463,6 +470,7 @@ namespace MWGui
         mInputBlocker = MyGUI::Gui::getInstance().createWidget<MyGUI::Widget>("",0,0,w,h,MyGUI::Align::Stretch,"InputBlocker");
 
         mHud->setVisible(true);
+        mWeather->setVisible(true);
 
         mCharGen = new CharacterCreation(mViewer->getSceneData()->asGroup(), mResourceSystem);
 
@@ -590,8 +598,11 @@ namespace MWGui
         if (!mMap)
             return; // UI not created yet
 
-        mHud->setVisible(mHudEnabled && !loading);
-        mToolTips->setVisible(mHudEnabled && !loading);
+        //mHud->setVisible(mHudEnabled && !loading);
+        mHud->setVisible(false);
+        //mToolTips->setVisible(mHudEnabled && !loading);
+        mToolTips->setVisible(false);
+        mWeather->setVisible(mHudEnabled && !loading);
 
         bool gameMode = !isGuiMode();
 
@@ -644,9 +655,9 @@ namespace MWGui
             // windows we are allowed to show (the 'allowed' var.)
             int eff = mShown & mAllowed & ~mForceHidden;
             mMap->setVisible(eff & GW_Map);
-            mInventoryWindow->setVisible(eff & GW_Inventory);
-            mSpellWindow->setVisible(eff & GW_Magic);
-            mStatsWindow->setVisible(eff & GW_Stats);
+            mInventoryWindow->setVisible(false);
+            mSpellWindow->setVisible(false);
+            mStatsWindow->setVisible(false);
         }
 
         switch (mode)

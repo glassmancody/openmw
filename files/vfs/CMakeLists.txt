@@ -13,6 +13,9 @@ set(TEXTURE_FILES
     textures/omw_menu_scroll_right.dds
     textures/omw_menu_scroll_center_h.dds
     textures/omw_menu_scroll_center_v.dds
+    textures/colorgradient.png
+    textures/colorpicker.png
+    textures/valuegradient.png
 )
 
 copy_all_resource_files(${CMAKE_CURRENT_SOURCE_DIR} ${OPENMW_MYGUI_FILES_ROOT} ${DDIRRELATIVE} "${TEXTURE_FILES}")

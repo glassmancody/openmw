@@ -31,6 +31,7 @@ namespace osgParticle
 namespace Resource
 {
     class SceneManager;
+    class ResourceSystem;
 }
 
 namespace MWRender
@@ -124,7 +125,7 @@ namespace MWRender
     class SkyManager
     {
     public:
-        SkyManager(osg::Group* parentNode, Resource::SceneManager* sceneManager);
+        SkyManager(osg::Group* parentNode, Resource::SceneManager* sceneManager, Resource::ResourceSystem* resourceSystem);
         ~SkyManager();
 
         void update(float duration);
@@ -191,6 +192,7 @@ namespace MWRender
         void updateRainParameters();
 
         Resource::SceneManager* mSceneManager;
+        Resource::ResourceSystem* mResourceSystem;
 
         osg::Camera *mCamera;
         osg::Uniform *mRainIntensityUniform;

@@ -223,6 +223,7 @@ namespace MWBase
             ///< \return Resulting mode
 
             virtual void changeWeather(const std::string& region, const unsigned int id) = 0;
+            virtual void forceWeather(const unsigned int id) = 0;
 
             virtual int getCurrentWeather() const = 0;
 

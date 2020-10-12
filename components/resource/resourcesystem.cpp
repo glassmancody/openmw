@@ -1,3 +1,8 @@
+#include <QString>
+#include <QFile>
+#include <QTextCodec>
+#include <QTextStream>
+
 #include "resourcesystem.hpp"
 
 #include <algorithm>
@@ -6,6 +11,9 @@
 #include "imagemanager.hpp"
 #include "niffilemanager.hpp"
 #include "keyframemanager.hpp"
+
+#include <components/files/configurationmanager.hpp>
+#include <components/config/gamesettings.hpp>
 
 namespace Resource
 {
@@ -18,11 +26,43 @@ namespace Resource
         mImageManager.reset(new ImageManager(vfs));
         mSceneManager.reset(new SceneManager(vfs, mImageManager.get(), mNifFileManager.get()));
 
+        mCfgMgr.reset(new Files::ConfigurationManager());
+        mGameSettings.reset(new Config::GameSettings(*mCfgMgr.get()));
+
+        QString path =mCfgMgr->getUserConfigPath().string().c_str();
+        path.append("openmw.cfg");
+        QFile file(path);
+
+        Log(Debug::Warning) << "Trying to open: " << path.toStdString();
+
+        if (file.exists()) {
+            if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) 
+                Log(Debug::Warning) << "Failed reading user config file";
+            else {
+                QTextStream stream(&file);
+                stream.setCodec(QTextCodec::codecForName("UTF-8"));
+
+                mGameSettings->readUserFile(stream);
+                file.close();
+                Log(Debug::Warning) << "Successfully to open: " << path.toStdString();
+            }
+        }
+
         addResourceManager(mNifFileManager.get());
         addResourceManager(mKeyframeManager.get());
         // note, scene references images so add images afterwards for correct implementation of updateCache()
         addResourceManager(mSceneManager.get());
         addResourceManager(mImageManager.get());
+    }
+
+    Files::ConfigurationManager* ResourceSystem::getConfigurationManager()
+    {
+        return mCfgMgr.get();
+    }
+
+    Config::GameSettings* ResourceSystem::getGameSettings()
+    {
+        return mGameSettings.get();
     }
 
     ResourceSystem::~ResourceSystem()

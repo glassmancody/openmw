@@ -467,7 +467,7 @@ namespace MWWorld
 
         // following should exist in all versions of MW, but not necessarily in TCs
         globals["gamehour"] = ESM::Variant(0.f);
-        globals["timescale"] = ESM::Variant(30.f);
+        globals["timescale"] = ESM::Variant(0.f);
         globals["day"] = ESM::Variant(1);
         globals["month"] = ESM::Variant(1);
         globals["year"] = ESM::Variant(1);
@@ -2029,6 +2029,12 @@ namespace MWWorld
         mWeatherManager->changeWeather(region, id);
     }
 
+    void World::forceWeather(const unsigned int id) 
+    {
+        const std::string playerRegion = Misc::StringUtils::lowerCase(getPlayerPtr().getCell()->getCell()->mRegion);        
+        mWeatherManager->changeWeather(playerRegion, id);
+    }
+
     void World::modRegion(const std::string &regionid, const std::vector<char> &chances)
     {
         mWeatherManager->modRegion(regionid, chances);
@@ -3492,7 +3498,7 @@ namespace MWWorld
         MWWorld::Ptr player = getPlayerPtr();
         int bounty = player.getClass().getNpcStats(player).getBounty();
         int playerGold = player.getClass().getContainerStore(player).count(ContainerStore::sGoldId);
-
+        
         static float fCrimeGoldDiscountMult = mStore.get<ESM::GameSetting>().find("fCrimeGoldDiscountMult")->mValue.getFloat();
         static float fCrimeGoldTurnInMult = mStore.get<ESM::GameSetting>().find("fCrimeGoldTurnInMult")->mValue.getFloat();
 

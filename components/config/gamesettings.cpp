@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QRegExp>
 
+#include <components/debug/debuglog.hpp>
 #include <components/files/configurationmanager.hpp>
 
 #include <boost/version.hpp>
@@ -26,6 +27,7 @@ namespace boost
 #endif /* (BOOST_VERSION <= 104600) */
 
 const char Config::GameSettings::sContentKey[] = "content";
+const char Config::GameSettings::sFallbackKey[] = "fallback";
 
 Config::GameSettings::GameSettings(Files::ConfigurationManager &cfg)
     : mCfgMgr(cfg)

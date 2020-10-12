@@ -334,7 +334,7 @@ namespace MWRender
 
         mFog.reset(new FogManager());
 
-        mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager()));
+        mSky.reset(new SkyManager(sceneRoot, resourceSystem->getSceneManager(), resourceSystem));
         mSky->setCamera(mViewer->getCamera());
         mSky->setRainIntensityUniform(mWater->getRainIntensityUniform());
 

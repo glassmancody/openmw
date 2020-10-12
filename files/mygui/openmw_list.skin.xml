@@ -80,6 +80,37 @@
 
     </Resource>
 
+    <Resource type="AutoSizedResourceSkin" name="MW_VScroll_Color_Bg" texture="textures\valuegradient.png">
+        <BasisSkin type="MainSkin">
+            <State name="normal">
+            </State>
+        </BasisSkin>
+    </Resource>
+
+    <Resource type="ResourceSkin" name="MW_VScroll_Color" size="14 90">
+        <Property key="TrackRangeMargins" value="2 3"/>
+        <Property key="MinTrackSize" value="14"/>
+        <Property key="MoveToClick" value="true"/>
+        <Property key="TrackFill" value="1"/>
+
+        <Property key="WheelPage" value="1"/>
+        <Property key="ViewPage" value="36"/>
+        <Property key="Page" value="36"/>
+
+        <!-- Background widget trick that must go first to be placed behind Track and FirstPart/SecondPart widgets, provides the bar texture -->
+        <Child type="Widget" skin="MW_VScroll_Color_Bg" offset="0 0 14 90" align="Stretch" />
+        <Child type="Widget" skin="MW_Box" offset="0 0 14 90" align="Stretch" />
+
+        <!-- These are only provided to get mouse input, they should have no skin and be transparent -->
+
+        <Child type="Button" skin="MW_ScrollEmptyPart" offset="0 14 24 14" align="Left VStretch" name="FirstPart"/>
+        <Child type="Button" skin="MW_ScrollEmptyPart" offset="0 52 24 14" align="Left VStretch" name="SecondPart"/>
+
+        <!-- Tracker must be last to be on top and receive mouse events -->
+        <Child type="Button" skin="MW_ScrollTrackV" offset="2 40 9 10" align="Top HStretch" name="Track"/>
+
+    </Resource>
+
     <Resource type="AutoSizedResourceSkin" name="MW_ScrollTrackV" texture="textures\omw_menu_scroll_center_v.dds">
         <Property key="MinTrackSize" value="14"/>
         <BasisSkin type="TileRect" align="Stretch">

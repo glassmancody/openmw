@@ -15,6 +15,14 @@ namespace osg
     class State;
 }
 
+namespace Config {
+    class GameSettings;
+}
+
+namespace Files {
+    class ConfigurationManager;
+}
+
 namespace Resource
 {
 
@@ -32,6 +40,7 @@ namespace Resource
     public:
         ResourceSystem(const VFS::Manager* vfs);
         ~ResourceSystem();
+
 
         SceneManager* getSceneManager();
         ImageManager* getImageManager();
@@ -64,11 +73,19 @@ namespace Resource
         /// Call releaseGLObjects for each resource manager.
         void releaseGLObjects(osg::State* state);
 
+
+        Files::ConfigurationManager* getConfigurationManager();
+
+        Config::GameSettings* getGameSettings();
+
     private:
         std::unique_ptr<SceneManager> mSceneManager;
         std::unique_ptr<ImageManager> mImageManager;
         std::unique_ptr<NifFileManager> mNifFileManager;
         std::unique_ptr<KeyframeManager> mKeyframeManager;
+
+        std::unique_ptr<Files::ConfigurationManager> mCfgMgr;
+        std::unique_ptr<Config::GameSettings> mGameSettings;
 
         // Store the base classes separately to get convenient access to the common interface
         // Here users can register their own resourcemanager as well
