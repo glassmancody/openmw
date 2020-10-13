@@ -72,7 +72,6 @@
 #include "navmesh.hpp"
 #include "actorspaths.hpp"
 #include "recastmesh.hpp"
-#include "fogmanager.hpp"
 #include "objectpaging.hpp"
 
 

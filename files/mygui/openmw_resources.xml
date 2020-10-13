@@ -189,17 +189,23 @@
 
     
     <Resource type="ResourceLayout" name="MW_ColorPicker" version="3.2.0">
-        <Widget type="Widget" position="0 0 284 226" align="Center" name="Root">
-            <Widget type="ImageBox" skin="ImageBox" position="6 6 220 220" align="Top Left" name="Hue">
+        <Widget type="Widget" position="0 0 150 116" align="Center" name="Root">
+        <Property key="NeedKeyFocus" value="true"/>
+            <Widget type="ImageBox" skin="ImageBox" position="6 6 110 110" align="Top Left" name="Hue">
                 <Property key="ImageTexture" value="textures/colorgradient.png"/>
-
-                <Widget type="ImageBox" skin="ImageBox" position="0 0 220 220" align="Top left" name="HuePicker">
+                <Widget type="ImageBox" skin="ImageBox" position="0 0 110 110" align="Top left" name="HuePicker">
                     <Property key="ImageTexture" value="textures/colorpicker.png"/>
                     <Property key="NeedMouseFocus" value="true"/>
                 </Widget>
-
             </Widget>
-            <Widget type="ScrollBar" skin="MW_VScroll_Color" position="228 6 16 220" name="ValueSlider">
+            
+            <Widget type="ImageBox" skin="ImageBox" position="128 6 10 110" align="Stretch" name="ValueSliderBG">
+                <Property key="ImageTexture" value="textures\valuegradient.png" />
+            </Widget>
+            
+            <Widget type="ScrollBar" skin="MW_VScroll_Color" position="128 6 10 110" name="ValueSlider">
+                    <Property key="NeedKeyFocus" value="true"/>
+
                 <Property key="MoveToClick" value="true"/>
                 <Property key="Range" value="255"/>
                 <Property key="Page" value="1"/>

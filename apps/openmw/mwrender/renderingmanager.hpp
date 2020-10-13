@@ -13,6 +13,7 @@
 
 #include "renderinginterface.hpp"
 #include "rendermode.hpp"
+#include "fogmanager.hpp"
 
 #include <deque>
 #include <memory>
@@ -129,6 +130,10 @@ namespace MWRender
 
         void configureAmbient(const ESM::Cell* cell);
         void configureFog(const ESM::Cell* cell);
+        void configureFog(const ESM::Cell* cell, const osg::Vec4f fog)
+        {
+            mFog->configure(mViewDistance, cell, fog);
+        }
         void configureFog(float fogDepth, float underwaterFog, float dlFactor, float dlOffset, const osg::Vec4f& colour);
 
         void addCell(const MWWorld::CellStore* store);

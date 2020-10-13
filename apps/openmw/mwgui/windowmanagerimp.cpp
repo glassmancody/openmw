@@ -1542,6 +1542,7 @@ namespace MWGui
     void WindowManager::updatePlayer()
     {
         mInventoryWindow->updatePlayer();
+        mWeather->update();
 
         const MWWorld::Ptr player = MWMechanics::getPlayer();
         if (player.getClass().getNpcStats(player).isWerewolf())

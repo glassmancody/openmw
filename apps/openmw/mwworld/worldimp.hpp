@@ -220,6 +220,8 @@ namespace MWWorld
 
             CellStore *getCell (const ESM::CellId& id) override;
 
+            MWRender::RenderingManager* getRenderingManager() override { return mRendering.get(); }
+
             void testExteriorCells() override;
             void testInteriorCells() override;
 

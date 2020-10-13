@@ -2027,12 +2027,14 @@ namespace MWWorld
     void World::changeWeather(const std::string& region, const unsigned int id)
     {
         mWeatherManager->changeWeather(region, id);
+        MWBase::Environment::get().getWindowManager()->updatePlayer();
     }
 
     void World::forceWeather(const unsigned int id) 
     {
         const std::string playerRegion = Misc::StringUtils::lowerCase(getPlayerPtr().getCell()->getCell()->mRegion);        
         mWeatherManager->changeWeather(playerRegion, id);
+        MWBase::Environment::get().getWindowManager()->updatePlayer();
     }
 
     void World::modRegion(const std::string &regionid, const std::vector<char> &chances)
@@ -3368,6 +3370,7 @@ namespace MWWorld
 
         const TimeStamp time = getTimeStamp();
         mWeatherManager->update(duration, paused, time, isExterior);
+        MWBase::Environment::get().getWindowManager()->updatePlayer();
     }
 
     struct AddDetectedReferenceVisitor

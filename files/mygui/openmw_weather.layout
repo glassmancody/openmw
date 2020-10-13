@@ -74,36 +74,86 @@
 
             <Widget type="Widget" skin="" position="0 0 576 500" align="Top Left" name="Colors">
 
-                <Widget type="Widget" skin="" position="0 0 284 246" align="Top Left">
-                    <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 282 18">
-                        <Property key="Caption" value="Sky Colour"/>
-                        <Property key="TextAlign" value="Left"/>
+                <Widget type="HBox" skin="" position="10 0 576 150" align="Top Left">
+                    <Property key="Spacing" value="60"/>
+                    <Property key="Margin" value="60"/>
+
+                    <Widget type="Widget" skin="" position="0 0 150 150" align="Top Left">
+                        <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 150 18">
+                            <Property key="Caption" value="Sky Colour"/>
+                            <Property key="TextAlign" value="Left"/>
+                        </Widget>
+                        <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 150 116" name="SkyPicker"/>
                     </Widget>
-                    <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 284 226" name="SkyPicker"/>
+    
+                    <Widget type="Widget" skin="" position="0 0 150 150" align="Top Left">
+                       <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 150 18">
+                            <Property key="Caption" value="Fog Colour"/>
+                            <Property key="TextAlign" value="Left"/>
+                        </Widget>
+                        <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 150 116"name="FogPicker"/>
+                    </Widget>
+    
+                    <Widget type="Widget" skin="" position="0 0 150 150" align="Top Left">
+                       <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 150 18">
+                            <Property key="Caption" value="Sun Colour"/>
+                            <Property key="TextAlign" value="Left"/>
+                        </Widget>
+                        <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 150 116" name="SunPicker"/>
+                    </Widget>
+
                 </Widget>
 
-                <Widget type="Widget" skin="" position="288 0 284 246" align="Top Left">
-                   <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 282 18">
-                        <Property key="Caption" value="Fog Colour"/>
-                        <Property key="TextAlign" value="Left"/>
+                <Widget type="HBox" skin="" position="10 154 576 150" align="Top Left HCenter VCenter">
+                    <Property key="Spacing" value="60"/>
+                    <Property key="Margin" value="60"/>
+
+                    <Widget type="Widget" skin="" position="0 0 150 150" align="Top Left Center">
+                       <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 150 18">
+                            <Property key="Caption" value="Ambient Colour"/>
+                            <Property key="TextAlign" value="Left"/>
+                        </Widget>
+                        <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 150 116" name="AmbientPicker"/>
                     </Widget>
-                    <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 284 226" name="FogPicker"/>
+
+
+                    <Widget type="Widget" skin="" position="0 0 150 150" align="Top Left Center">
+                       <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 150 18">
+                            <Property key="Caption" value="Sunset Disc"/>
+                            <Property key="TextAlign" value="Left"/>
+                        </Widget>
+                        <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 150 116" name="SunDisc"/>
+                    </Widget>
+
+                  <Widget type="Widget" skin="" position="0 0 150 150" align="Top Left Center">
+                       <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 150 18">
+                            <Property key="Caption" value="IntAmbient (temp)"/>
+                            <Property key="TextAlign" value="Left"/>
+                        </Widget>
+                        <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 150 116" name="IntAmbientPicker"/>
+                    </Widget>
+
                 </Widget>
 
-                <Widget type="Widget" skin="" position="0 250 284 246" align="Top Left">
-                   <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 282 18">
-                        <Property key="Caption" value="Sun Colour"/>
-                        <Property key="TextAlign" value="Left"/>
-                    </Widget>
-                    <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 284 226" name="SunPicker"/>
-                </Widget>
+                <Widget type="HBox" skin="" position="10 308 576 150" align="Top Left">
+                    <Property key="Spacing" value="60"/>
+                    <Property key="Margin" value="60"/>
 
-                <Widget type="Widget" skin="" position="288 250 284 246" align="Top Left">
-                   <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 282 18">
-                        <Property key="Caption" value="Ambient Colour"/>
-                        <Property key="TextAlign" value="Left"/>
+                    <Widget type="Widget" skin="" position="0 0 150 150" align="Top Left Center">
+                       <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 150 18">
+                            <Property key="Caption" value="IntSun (temp)"/>
+                            <Property key="TextAlign" value="Left"/>
+                        </Widget>
+                        <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 150 116" name="IntSunPicker"/>
                     </Widget>
-                    <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 284 226" name="AmbientPicker"/>
+
+                    <Widget type="Widget" skin="" position="0 0 150 150" align="Top Left">
+                        <Widget type="TextBox" skin="SandText" align="Top HCenter" position="2 2 150 18">
+                            <Property key="Caption" value="IntSky (temp)"/>
+                            <Property key="TextAlign" value="Left"/>
+                        </Widget>
+                        <Widget type="ColorPicker" skin="MW_ColorPicker" position="0 20 150 116" name="IntFogPicker"/>
+                </Widget>
                 </Widget>
 
             </Widget>

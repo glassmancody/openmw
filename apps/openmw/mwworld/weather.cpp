@@ -839,6 +839,11 @@ void WeatherManager::update(float duration, bool paused, const TimeStamp& time, 
     query = "Weather_" + idmap[curr_weather] + "_Sky_" + timestr + "_Color";
     res = mRendering.getResourceSystem()->getGameSettings()->getWeatherColor(query);
     mResult.mSkyColor = res;
+    if (time.getHour() >= mSunsetTime && time.getHour() <= (mSunsetTime + mSunsetDuration)) {
+        query = "Weather_" + idmap[curr_weather] + "_Sun_Disc_Sunset_Color";
+        res = mRendering.getResourceSystem()->getGameSettings()->getWeatherColor(query);
+        mResult.mSunDiscColor = res;
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
 

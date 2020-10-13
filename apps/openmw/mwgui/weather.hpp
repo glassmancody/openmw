@@ -12,6 +12,9 @@
 
 #include "windowpinnablebase.hpp"
 
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+
 #include <components/resource/resourcesystem.hpp>
 
 namespace MyGUI {
@@ -41,6 +44,8 @@ namespace MWGui
 
         EventHandle_Widget eventColorChanged;
 
+        void setColorWheels(int weather);
+
     protected:
         void initialiseOverride() final;
         void onMouseClick(MyGUI::Widget* _sender);
@@ -52,6 +57,7 @@ namespace MWGui
         MyGUI::ImageBox* mHuePicker;
         MyGUI::ImageBox* mHue;
         MyGUI::ScrollBar* mValueSlider;
+        MyGUI::ImageBox* mValueSliderBG;
     };
 
 
@@ -64,13 +70,17 @@ namespace MWGui
 
         virtual void onPinToggled() {}
 
+        void update();
+
     protected:
         void onWeatherButtonClicked(MyGUI::Widget* _sender);
         void onHourSliderChanged(MyGUI::ScrollBar* _sender, size_t pos);
         void onTimeButtonClicked(MyGUI::Widget* _sender);
         void onTimeChanged();
         void onColorChanged(ColorPicker* _sender);
-        
+        void onIntColorChanged(ColorPicker* _sender);
+        void onKeyPressed(MyGUI::Widget *sender, MyGUI::KeyCode key, MyGUI::Char character);
+
         enum TimeInterval {
             Day,
             Sunrise,
@@ -78,7 +88,12 @@ namespace MWGui
             Night
         };
 
+        void setColorWheels(int id);
+
     private:
+        // (name, (fallback, color))
+        std::map<std::string, std::map<std::string, osg::Vec4f>> mProfiles;
+
         Resource::ResourceSystem* mResourceSystem;
         std::map<MyGUI::Widget*, int> mWeatherButtons; 
         MyGUI::ScrollBar* mHourSlider;
@@ -92,6 +107,10 @@ namespace MWGui
         ColorPicker* mFogPicker;
         ColorPicker* mSunPicker;
         ColorPicker* mAmbientPicker;
+        ColorPicker* mSunDisc;
+        ColorPicker* mIntSunPicker;
+        ColorPicker* mIntAmbientPicker;
+        ColorPicker* mIntFogPicker;
 
         TimeInterval mTimeInterval;
 

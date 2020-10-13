@@ -13,20 +13,25 @@
 #include "MyGUI_Widget.h"
 #include "MyGUI_Button.h"
 #include "MyGUI_ScrollBar.h"
+#include "MyGUI_ClipboardManager.h"
 
 #include "MyGUI_TextBox.h"
 #include <MyGUI_ImageBox.h>
 #include <MyGUI_Gui.h>
 
+#include <SDL_clipboard.h>
+
 #include "weather.hpp"
 
 #include <osg/Vec4f>
 
+#include <components/misc/stringops.hpp>
 #include <components/config/gamesettings.hpp>
 #include <components/resource/scenemanager.hpp>
 
 #include "../mwrender/renderingmanager.hpp"
 
+#include "../mwbase/windowmanager.hpp"
 #include "../mwbase/environment.hpp"
 #include "../mwbase/world.hpp"
 
@@ -180,6 +185,7 @@ namespace MWGui
         {9, "Blizzard"}
     };
 
+
     ColorPicker::ColorPicker()
     {
     }
@@ -191,15 +197,14 @@ namespace MWGui
 
     void ColorPicker::setColor(const osg::Vec4f& rgb)
     {
-         // float pickerWidth = myPickerImage.size.width;
-        // float radius = pickerWidth / 2;
-        // float colorRadius = saturation * radius;
-        // float angle = (1 - hue) * (2 * pi);
-        // float midX = myPicker.size.width / 2; //midpoint of the circle
-        // float midY = myPicker.size.height / 2;
-        // float xOffset = cos(angle) * colorRadius; //offset from the midpoint of the circle
-        // float yOffset = sin(angle) * colorRadius;
-        // Point colorPoint = new Point(midX + xOffset, midY + yOffset);
+        osg::Vec4f hsv = rgb_to_hsv(rgb);
+        float r = hsv[1] * (mHuePicker->getWidth() / 2);
+        float a = hsv[0];
+        float y = cos(osg::DegreesToRadians(a)) * r;
+        float x = sin(osg::DegreesToRadians(a)) * r;
+        mHuePicker->setPosition(MyGUI::IntPoint(x, -y));
+        mValueSlider->setScrollPosition(255-(hsv[2]*255.0));
+        mValueSliderBG->setColour(MyGUI::Colour(rgb[0], rgb[1], rgb[2]));
     }
 
     osg::Vec4f ColorPicker::getColor()
@@ -214,7 +219,7 @@ namespace MWGui
             hue += 360; 
 
         // how far we are from circle as a percentage of the radius
-        float sat = sqrt(pow(x,2) + pow(y,2)) / 110;
+        float sat = sqrt(pow(x,2) + pow(y,2)) / (mHuePicker->getWidth() / 2);
         
         float val = (255-mValueSlider->getScrollPosition()) / 255.0;
 
@@ -230,6 +235,7 @@ namespace MWGui
         assignWidget(mHuePicker, "HuePicker");
         assignWidget(mHue, "Hue");
         assignWidget(mValueSlider, "ValueSlider");
+        assignWidget(mValueSliderBG, "ValueSliderBG");
         
         mHuePicker->setNeedMouseFocus(true);
         mHuePicker->eventMouseDrag += MyGUI::newDelegate(this, &ColorPicker::onMouseDrag);
@@ -249,21 +255,26 @@ namespace MWGui
     {
         if (_id!=MyGUI::MouseButton::Left  && _id != MyGUI::MouseButton::Right ) return;
 
+        int radius = (mHuePicker->getWidth() / 2);
+
         MyGUI::IntCoord widgetPos = mHue->getAbsoluteCoord();
         MyGUI::IntPoint relMousePos = MyGUI::InputManager::getInstance ().getMousePosition () - MyGUI::IntPoint(widgetPos.left, widgetPos.top);
 
-        int x = relMousePos.left - 110;
-        int y = relMousePos.top - 110;
+        int x = relMousePos.left - radius;
+        int y = relMousePos.top - radius;
 
-        x = std::min(std::max(-110, x), 110);
-        y = std::min(std::max(-110, y), 110);
+        x = std::min(std::max(-radius, x), radius);
+        y = std::min(std::max(-radius, y), radius);
         
-        if ((pow(x, 2) + pow(y, 2)) > pow(110, 2)) {
+        if ((pow(x, 2) + pow(y, 2)) > pow(radius, 2)) {
             int xn = (x > 0) ? 1 : -1;
             int yn = (y > 0) ? 1 : -1;
-            x = sqrt(pow(110,2) - pow(y,2)) * xn;
-            y = sqrt(pow(110,2) - pow(x,2)) * yn;
+            x = sqrt(pow(radius,2) - pow(y,2)) * xn;
+            y = sqrt(pow(radius,2) - pow(x,2)) * yn;
         }
+
+        osg::Vec4f c = getColor();
+        mValueSliderBG->setColour(MyGUI::Colour(c[0], c[1], c[2]));
 
         mHuePicker->setPosition(MyGUI::IntPoint(x, y));
         eventColorChanged(this);
@@ -318,18 +329,102 @@ namespace MWGui
         getWidget(mFogPicker, "FogPicker");
         getWidget(mSunPicker, "SunPicker");
         getWidget(mAmbientPicker, "AmbientPicker");
+        getWidget(mSunDisc, "SunDisc");
+        getWidget(mIntSunPicker, "IntSunPicker");
+        getWidget(mIntAmbientPicker, "IntAmbientPicker");
+        getWidget(mIntFogPicker, "IntFogPicker");
 
         mSkyPicker->eventColorChanged += MyGUI::newDelegate(this, &Weather::onColorChanged);
         mFogPicker->eventColorChanged += MyGUI::newDelegate(this, &Weather::onColorChanged);
         mSunPicker->eventColorChanged += MyGUI::newDelegate(this, &Weather::onColorChanged);
         mAmbientPicker->eventColorChanged += MyGUI::newDelegate(this, &Weather::onColorChanged);
+        mSunDisc->eventColorChanged += MyGUI::newDelegate(this, &Weather::onColorChanged);
+
+        mIntSunPicker->eventColorChanged += MyGUI::newDelegate(this, &Weather::onIntColorChanged);
+        mIntAmbientPicker->eventColorChanged += MyGUI::newDelegate(this, &Weather::onIntColorChanged);
+        mIntFogPicker->eventColorChanged += MyGUI::newDelegate(this, &Weather::onIntColorChanged);
+
+        mSkyPicker->setNeedKeyFocus(true);
+        MWBase::Environment::get().getWindowManager()->setKeyFocusWidget(mSkyPicker);
+
+        mSkyPicker->eventKeyButtonPressed += MyGUI::newDelegate(this, &Weather::onKeyPressed);
+        mFogPicker->eventKeyButtonPressed += MyGUI::newDelegate(this, &Weather::onKeyPressed);
+        mSunPicker->eventKeyButtonPressed += MyGUI::newDelegate(this, &Weather::onKeyPressed);
+        mAmbientPicker->eventKeyButtonPressed += MyGUI::newDelegate(this, &Weather::onKeyPressed);
+        mSunDisc->eventKeyButtonPressed += MyGUI::newDelegate(this, &Weather::onKeyPressed);
+        mIntSunPicker->eventKeyButtonPressed += MyGUI::newDelegate(this, &Weather::onKeyPressed);
+        mIntAmbientPicker->eventKeyButtonPressed += MyGUI::newDelegate(this, &Weather::onKeyPressed);
+        mIntFogPicker->eventKeyButtonPressed += MyGUI::newDelegate(this, &Weather::onKeyPressed);
 
         onTimeChanged();
+        setColorWheels(mCurrentID);
+    }
+
+    void Weather::setColorWheels(int weather)
+    {
+        std::string wtype = mWeatherMappings[weather];
+        std::string time = mTimeMappings[mTimeInterval];
+
+        std::string query = "Weather_" + wtype + "_" + "Sky_" + time + "_Color"; 
+        mSkyPicker->setColor(mResourceSystem->getGameSettings()->getWeatherColor(query));
+        query = "Weather_" + wtype + "_" + "Fog_" + time + "_Color"; 
+        mFogPicker->setColor(mResourceSystem->getGameSettings()->getWeatherColor(query)); 
+        query = "Weather_" + wtype + "_" + "Ambient_" + time + "_Color"; 
+        mSunPicker->setColor(mResourceSystem->getGameSettings()->getWeatherColor(query)); 
+        query = "Weather_" + wtype + "_" + "Sun_" + time + "_Color"; 
+        mAmbientPicker->setColor(mResourceSystem->getGameSettings()->getWeatherColor(query)); 
+        query = "Weather_" + wtype + "_" + "Sun_Disc_Sunset_Color"; 
+        mSunDisc->setColor(mResourceSystem->getGameSettings()->getWeatherColor(query)); 
+
+//Weather_[Weather]_[Sky/Fog/Ambient/Sun/Sun_Disc]_[Time]_Color = osg::vec4f
+/*
+    "Weather_" + weatherString + "_" + Sky_Sunrise + "_Color"            ,117,141,164
+    "Weather_" + weatherString + "_" + Sky_Day + "_Color"                ,095,135,203
+    "Weather_" + weatherString + "_" + Sky_Sunset + "_Color"             ,056,089,129
+    "Weather_" + weatherString + "_" + Sky_Night + "_Color"              ,009,010,011
+    "Weather_" + weatherString + "_" + Fog_Sunrise + "_Color"            ,255,189,157
+    "Weather_" + weatherString + "_" + Fog_Day + "_Color"                ,206,227,255
+    "Weather_" + weatherString + "_" + Fog_Sunset + "_Color"             ,255,189,157
+    "Weather_" + weatherString + "_" + Fog_Night + "_Color"              ,009,010,011
+    "Weather_" + weatherString + "_" + Ambient_Sunrise + "_Color"        ,047,066,096
+    "Weather_" + weatherString + "_" + Ambient_Day + "_Color"            ,137,140,160
+    "Weather_" + weatherString + "_" + Ambient_Sunset + "_Color"         ,068,075,096
+    "Weather_" + weatherString + "_" + Ambient_Night + "_Color"          ,032,035,042
+    "Weather_" + weatherString + "_" + Sun + "_" + Sunrise + "_Color"    ,242,159,119
+    "Weather_" + weatherString + "_" + Sun + "_" + Day + "_Color"        ,255,252,238
+    "Weather_" + weatherString + "_" + Sun + "_" + Sunset + "_Color"     ,255,114,079
+    "Weather_" + weatherString + "_" + Sun + "_" + Night + "_Color"      ,059,097,176
+    "Weather_" + weatherString + "_" + "Sun_Disc_Sunset_Color"          ,255,189,157
+*/
+    }
+
+
+    void Weather::onKeyPressed(MyGUI::Widget *_sender, MyGUI::KeyCode key, MyGUI::Char character)
+    {
+        if (key == MyGUI::KeyCode::C) {
+            auto c = dynamic_cast<ColorPicker*>( _sender)->getColor();
+            SDL_SetClipboardText(Misc::StringUtils::format("%d,%d,%d", (int)(c[0] * 255), (int)(c[1] * 255), (int)(c[2] * 255)).c_str());
+        }
+    }
+
+    void Weather::onIntColorChanged(ColorPicker* _sender)
+    {
+        if (MWMechanics::getPlayer().getCell()) 
+            if (MWMechanics::getPlayer().getCell()->getCell()->isExterior())
+                return;
+
+        if (_sender == mIntAmbientPicker)
+            MWBase::Environment::get().getWorld()->getRenderingManager()->setAmbientColour(mIntAmbientPicker->getColor());
+        else if (_sender == mIntSunPicker)
+            MWBase::Environment::get().getWorld()->getRenderingManager()->setSunColour(mIntSunPicker->getColor(), mIntSunPicker->getColor());
+        else if (_sender == mIntFogPicker)
+            MWBase::Environment::get().getWorld()->getRenderingManager()->configureFog(MWMechanics::getPlayer().getCell()->getCell(), mIntFogPicker->getColor());
     }
 
     void Weather::onColorChanged(ColorPicker* _sender)
     {
         std::string wtype = "";
+        std::string time = mTimeMappings[mTimeInterval];
         if (_sender == mSkyPicker)
             wtype="Sky";
         else if (_sender == mFogPicker)
@@ -338,16 +433,27 @@ namespace MWGui
             wtype="Sun";
         else if (_sender == mAmbientPicker)
             wtype="Ambient";
+        else if (_sender == mSunDisc) {
+            wtype="Sun_Disc";
+            time = "Sunset";
+        }
         else 
             return;
 
-        std::string query = "Weather_" + mWeatherMappings[mCurrentID] + "_" + wtype + "_" + mTimeMappings[mTimeInterval] + "_Color"; 
+        std::string query = "Weather_" + mWeatherMappings[mCurrentID] + "_" + wtype + "_" + time + "_Color"; 
         mResourceSystem->getGameSettings()->setWeatherColor(query, _sender->getColor());
     }
 
     bool Weather::exit()
     {
         return true;
+    }
+
+    void Weather::update()
+    {
+        mCurrentID = MWBase::Environment::get().getWorld()->getCurrentWeather();
+        onTimeChanged();
+        //setColorWheels(mCurrentID);
     }
 
     void Weather::onTimeChanged()
@@ -378,7 +484,17 @@ namespace MWGui
         else
             mTimeInterval = TimeInterval::Night;
         
-        mCurrentID = MWBase::Environment::get().getWorld()->getCurrentWeather();
+
+        std::string region = "Unknown Region";
+        if (MWMechanics::getPlayer().getCell()) {
+            const ESM::Cell* cell = MWMechanics::getPlayer().getCell()->getCell();
+            if (cell->isExterior()) 
+                region = cell->mRegion; 
+            else 
+                region = cell->mName;
+        }
+        
+        setTitle(Misc::StringUtils::format("%s during %s in %s", mWeatherMappings[mCurrentID], mTimeMappings[mTimeInterval], region));
     }
 
     void Weather::onTimeButtonClicked(MyGUI::Widget* _sender) 
@@ -404,8 +520,6 @@ namespace MWGui
         MWBase::Environment::get().getWorld()->advanceTime(((float)pos / 100.0) - MWBase::Environment::get().getWorld()->getTimeStamp().getHour());
         onTimeChanged();
     }
-
-    //Log(Debug::Warning) << "\tTESTING: " << test;    //osg::Vec4f test = mResourceSystem->getGameSettings()->getWeatherColor("Weather_Blight_Fog_Day_Color");
 
     void Weather::onWeatherButtonClicked(MyGUI::Widget* _sender)
     {

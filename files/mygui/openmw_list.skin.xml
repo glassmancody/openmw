@@ -98,8 +98,6 @@
         <Property key="Page" value="36"/>
 
         <!-- Background widget trick that must go first to be placed behind Track and FirstPart/SecondPart widgets, provides the bar texture -->
-        <Child type="Widget" skin="MW_VScroll_Color_Bg" offset="0 0 14 90" align="Stretch" />
-        <Child type="Widget" skin="MW_Box" offset="0 0 14 90" align="Stretch" />
 
         <!-- These are only provided to get mouse input, they should have no skin and be transparent -->
 

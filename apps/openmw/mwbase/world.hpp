@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <deque>
+#include <memory>
 
 #include <components/esm/cellid.hpp>
 
@@ -59,6 +60,7 @@ namespace MWPhysics
 namespace MWRender
 {
     class Animation;
+    class RenderingManager;
 }
 
 namespace MWMechanics
@@ -125,6 +127,8 @@ namespace MWBase
             virtual MWWorld::CellStore *getInterior (const std::string& name) = 0;
 
             virtual MWWorld::CellStore *getCell (const ESM::CellId& id) = 0;
+
+            virtual MWRender::RenderingManager* getRenderingManager() = 0;
 
             virtual void testExteriorCells() = 0;
             virtual void testInteriorCells() = 0;
