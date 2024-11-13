@@ -1,4 +1,4 @@
-#version 120
+#version 430 compatibility
 #pragma import_defines(FORCE_OPAQUE, DISTORTION)
 
 #if @useUBO
@@ -10,7 +10,6 @@
 #endif
 
 #if @diffuseMap
-uniform sampler2D diffuseMap;
 varying vec2 diffuseMapUV;
 #endif
 
@@ -75,9 +74,6 @@ centroid varying vec3 passLighting;
 centroid varying vec3 passSpecular;
 centroid varying vec3 shadowDiffuseLighting;
 centroid varying vec3 shadowSpecularLighting;
-#else
-uniform float emissiveMult;
-uniform float specStrength;
 #endif
 varying vec3 passViewPos;
 varying vec3 passNormal;
@@ -94,8 +90,10 @@ varying vec4 passTangent;
 #include "lib/material/alpha.glsl"
 #include "lib/util/distortion.glsl"
 
+#include "lib/material/colormodes.glsl"
+#include "lib/material/vertexcolors.glsl"
+
 #include "fog.glsl"
-#include "vertexcolors.glsl"
 #include "shadows_fragment.glsl"
 #include "compatibility/normals.glsl"
 
@@ -114,9 +112,16 @@ varying vec3 orthoDepthMapCoord;
 #endif
 
 uniform sampler2D opaqueDepthTex;
+uniform vec4 debugcolor = vec4(-1.0);
 
 void main()
 {
+    if (debugcolor.x > 0) {
+        gl_FragData[0] = debugcolor;
+        return;
+    }
+    Material material = getMaterial();
+
 #if @particleOcclusion
     applyOcclusionDiscard(orthoDepthMapCoord, texture2D(orthoDepthMap, orthoDepthMapCoord.xy * 0.5 + 0.5).r);
 #endif
@@ -129,7 +134,7 @@ void main()
     float height = texture2D(normalMap, normalMapUV).a;
     float flipY = (passTangent.w > 0.0) ? -1.f : 1.f;
 #else
-    float height = texture2D(diffuseMap, diffuseMapUV).a;
+    float height = sample_diffuse(diffuseMapUV).a;
     // FIXME: shouldn't be necessary, but in this path false-positives are common
     float flipY = -1.f;
 #endif
@@ -139,10 +144,10 @@ void main()
 vec2 screenCoords = gl_FragCoord.xy / screenRes;
 
 #if @diffuseMap
-    gl_FragData[0] = texture2D(diffuseMap, diffuseMapUV + offset);
+    gl_FragData[0] = sample_diffuse(diffuseMapUV + offset);
 
 #if defined(DISTORTION) && DISTORTION
-    gl_FragData[0].a *= getDiffuseColor().a;
+    gl_FragData[0].a *= getDiffuseColor(material).a;
     gl_FragData[0] = applyDistortion(gl_FragData[0], distortionStrength, gl_FragCoord.z, texture2D(opaqueDepthTex, screenCoords / @distorionRTRatio).x);
     return;
 #endif
@@ -150,13 +155,13 @@ vec2 screenCoords = gl_FragCoord.xy / screenRes;
 #if @diffuseParallax
     gl_FragData[0].a = 1.0;
 #else
-    gl_FragData[0].a *= coveragePreservingAlphaScale(diffuseMap, diffuseMapUV + offset);
+    // gl_FragData[0].a *= coveragePreservingAlphaScale(diffuseMap, diffuseMapUV + offset);
 #endif
 #else
     gl_FragData[0] = vec4(1.0);
 #endif
 
-    vec4 diffuseColor = getDiffuseColor();
+    vec4 diffuseColor = getDiffuseColor(material);
     gl_FragData[0].a *= diffuseColor.a;
 
 #if @darkMap
@@ -229,13 +234,13 @@ vec2 screenCoords = gl_FragCoord.xy / screenRes;
     float shininess = specTex.a * 255.0;
     vec3 specularColor = specTex.xyz;
 #else
-    float shininess = gl_FrontMaterial.shininess;
-    vec3 specularColor = getSpecularColor().xyz;
+    float shininess = material.shininess;
+    vec3 specularColor = getSpecularColor(material).xyz;
 #endif
     vec3 diffuseLight, ambientLight, specularLight;
     doLighting(passViewPos, viewNormal, shininess, shadowing, diffuseLight, ambientLight, specularLight);
-    lighting = diffuseColor.xyz * diffuseLight + getAmbientColor().xyz * ambientLight + getEmissionColor().xyz * emissiveMult;
-    specular = specularColor * specularLight * specStrength;
+    lighting = diffuseColor.xyz * diffuseLight + getAmbientColor(material).xyz * ambientLight + getEmissionColor(material).xyz * material.emissiveMult;
+    specular = specularColor * specularLight * material.specStrength;
 #endif
 
     clampLightingResult(lighting);

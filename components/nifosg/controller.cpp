@@ -435,7 +435,7 @@ namespace NifOsg
 
     AlphaController::AlphaController() {}
 
-    AlphaController::AlphaController(const Nif::NiAlphaController* ctrl, const osg::Material* baseMaterial)
+    AlphaController::AlphaController(const Nif::NiAlphaController* ctrl, const State::Material* baseMaterial)
         : mBaseMaterial(baseMaterial)
     {
         if (!ctrl->mInterpolator.empty())
@@ -458,7 +458,7 @@ namespace NifOsg
     void AlphaController::setDefaults(osg::StateSet* stateset)
     {
         stateset->setAttribute(
-            static_cast<osg::Material*>(mBaseMaterial->clone(osg::CopyOp::DEEP_COPY_ALL)), osg::StateAttribute::ON);
+            static_cast<State::Material*>(mBaseMaterial->clone(osg::CopyOp::DEEP_COPY_ALL)), osg::StateAttribute::ON);
     }
 
     void AlphaController::apply(osg::StateSet* stateset, osg::NodeVisitor* nv)
@@ -466,17 +466,17 @@ namespace NifOsg
         if (hasInput())
         {
             float value = mData.interpKey(getInputValue(nv));
-            osg::Material* mat = static_cast<osg::Material*>(stateset->getAttribute(osg::StateAttribute::MATERIAL));
-            osg::Vec4f diffuse = mat->getDiffuse(osg::Material::FRONT_AND_BACK);
+            State::Material* mat = static_cast<State::Material*>(stateset->getAttribute(osg::StateAttribute::MATERIAL));
+            osg::Vec4f diffuse = mat->getDiffuse();
             diffuse.a() = value;
-            mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuse);
+            mat->setDiffuse(diffuse);
         }
     }
 
     MaterialColorController::MaterialColorController() = default;
 
     MaterialColorController::MaterialColorController(
-        const Nif::NiMaterialColorController* ctrl, const osg::Material* baseMaterial)
+        const Nif::NiMaterialColorController* ctrl, const State::Material* baseMaterial)
         : mTargetColor(ctrl->mTargetColor)
         , mBaseMaterial(baseMaterial)
     {
@@ -501,7 +501,7 @@ namespace NifOsg
     void MaterialColorController::setDefaults(osg::StateSet* stateset)
     {
         stateset->setAttribute(
-            static_cast<osg::Material*>(mBaseMaterial->clone(osg::CopyOp::DEEP_COPY_ALL)), osg::StateAttribute::ON);
+            static_cast<State::Material*>(mBaseMaterial->clone(osg::CopyOp::DEEP_COPY_ALL)), osg::StateAttribute::ON);
     }
 
     void MaterialColorController::apply(osg::StateSet* stateset, osg::NodeVisitor* nv)
@@ -509,37 +509,37 @@ namespace NifOsg
         if (hasInput())
         {
             osg::Vec3f value = mData.interpKey(getInputValue(nv));
-            osg::Material* mat = static_cast<osg::Material*>(stateset->getAttribute(osg::StateAttribute::MATERIAL));
+            State::Material* mat = static_cast<State::Material*>(stateset->getAttribute(osg::StateAttribute::MATERIAL));
             using TargetColor = Nif::NiMaterialColorController::TargetColor;
             switch (mTargetColor)
             {
                 case TargetColor::Diffuse:
                 {
-                    osg::Vec4f diffuse = mat->getDiffuse(osg::Material::FRONT_AND_BACK);
+                    osg::Vec4f diffuse = mat->getDiffuse();
                     diffuse.set(value.x(), value.y(), value.z(), diffuse.a());
-                    mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuse);
+                    mat->setDiffuse(diffuse);
                     break;
                 }
                 case TargetColor::Specular:
                 {
-                    osg::Vec4f specular = mat->getSpecular(osg::Material::FRONT_AND_BACK);
+                    osg::Vec4f specular = mat->getSpecular();
                     specular.set(value.x(), value.y(), value.z(), specular.a());
-                    mat->setSpecular(osg::Material::FRONT_AND_BACK, specular);
+                    mat->setSpecular(specular);
                     break;
                 }
                 case TargetColor::Emissive:
                 {
-                    osg::Vec4f emissive = mat->getEmission(osg::Material::FRONT_AND_BACK);
+                    osg::Vec4f emissive = mat->getEmission();
                     emissive.set(value.x(), value.y(), value.z(), emissive.a());
-                    mat->setEmission(osg::Material::FRONT_AND_BACK, emissive);
+                    mat->setEmission(emissive);
                     break;
                 }
                 case TargetColor::Ambient:
                 default:
                 {
-                    osg::Vec4f ambient = mat->getAmbient(osg::Material::FRONT_AND_BACK);
+                    osg::Vec4f ambient = mat->getAmbient();
                     ambient.set(value.x(), value.y(), value.z(), ambient.a());
-                    mat->setAmbient(osg::Material::FRONT_AND_BACK, ambient);
+                    mat->setAmbient(ambient);
                 }
             }
         }

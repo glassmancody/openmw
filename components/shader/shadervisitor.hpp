@@ -4,9 +4,16 @@
 #include <osg/NodeVisitor>
 #include <osg/Program>
 
+#include <components/state/material.hpp>
+
 namespace Resource
 {
     class ImageManager;
+}
+
+namespace State
+{
+    class ResourceManager;
 }
 
 namespace Shader
@@ -18,8 +25,8 @@ namespace Shader
     class ShaderVisitor : public osg::NodeVisitor
     {
     public:
-        ShaderVisitor(
-            ShaderManager& shaderManager, Resource::ImageManager& imageManager, const std::string& defaultShaderPrefix);
+        ShaderVisitor(State::ResourceManager& resourceManager, ShaderManager& shaderManager,
+            Resource::ImageManager& imageManager, const std::string& defaultShaderPrefix);
 
         void setProgramTemplate(const osg::Program* programTemplate) { mProgramTemplate = programTemplate; }
 
@@ -82,43 +89,45 @@ namespace Shader
         bool mSupportsNormalsRT;
         bool mWeatherParticleOcclusion = false;
 
+        State::ResourceManager& mResourceManager;
         ShaderManager& mShaderManager;
         Resource::ImageManager& mImageManager;
 
         struct ShaderRequirements
         {
-            ShaderRequirements();
             ~ShaderRequirements() = default;
 
             // <texture stage, texture name>
             std::map<int, std::string> mTextures;
 
-            bool mShaderRequired;
+            bool mShaderRequired = false;
 
-            int mColorMode;
+            osg::ref_ptr<State::Material> mMaterial = new State::Material;
 
-            bool mMaterialOverridden;
-            bool mAlphaTestOverridden;
-            bool mAlphaBlendOverridden;
+            bool mMaterialOverridden = false;
+            bool mAlphaTestOverridden = false;
+            bool mAlphaBlendOverridden = false;
 
-            GLenum mAlphaFunc;
-            float mAlphaRef;
-            bool mAlphaBlend;
+            GLenum mAlphaFunc = GL_ALWAYS;
+            float mAlphaRef = 1.0;
+            bool mAlphaBlend = false;
 
-            bool mBlendFuncOverridden;
-            bool mAdditiveBlending;
+            bool mBlendFuncOverridden = false;
+            bool mAdditiveBlending = false;
 
-            bool mDiffuseHeight; // true if diffuse map has height info in alpha channel
-            bool mNormalHeight; // true if normal map has height info in alpha channel
-            bool mReconstructNormalZ; // used for red-green normal maps (e.g. BC5)
+            bool mDiffuseHeight = false; // true if diffuse map has height info in alpha channel
+            bool mNormalHeight = false; // true if normal map has height info in alpha channel
+            bool mReconstructNormalZ = false; // used for red-green normal maps (e.g. BC5)
 
             // -1 == no tangents required
-            int mTexStageRequiringTangents;
+            int mTexStageRequiringTangents = -1;
 
-            bool mSoftParticles;
+            bool mSoftParticles = false;
 
             // the Node that requested these requirements
-            osg::Node* mNode;
+            osg::Node* mNode = nullptr;
+
+            osg::ref_ptr<osg::Texture2D> mDiffuseMap = nullptr;
         };
         std::vector<ShaderRequirements> mRequirements;
 

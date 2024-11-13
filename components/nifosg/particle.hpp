@@ -39,6 +39,8 @@ namespace NifOsg
 
         void drawImplementation(osg::RenderInfo& renderInfo) const override;
 
+        osg::ref_ptr<osg::Vec4Array> mMaterialArray;
+
     private:
         int mQuota;
         osg::ref_ptr<osg::Vec3Array> mNormalArray;

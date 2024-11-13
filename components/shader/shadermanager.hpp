@@ -51,6 +51,9 @@ namespace Shader
         osg::ref_ptr<osg::Program> getProgram(osg::ref_ptr<osg::Shader> vertexShader,
             osg::ref_ptr<osg::Shader> fragmentShader, const osg::Program* programTemplate = nullptr);
 
+        osg::ref_ptr<osg::Program> createProgram(osg::ref_ptr<osg::Shader> vertexShader,
+            osg::ref_ptr<osg::Shader> fragmentShader, const osg::Program* programTemplate = nullptr);
+
         const osg::Program* getProgramTemplate() const { return mProgramTemplate; }
         void setProgramTemplate(const osg::Program* program) { mProgramTemplate = program; }
 

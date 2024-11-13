@@ -56,6 +56,8 @@
 #include <components/files/memorystream.hpp>
 
 #include "bgsmfilemanager.hpp"
+#include <components/state/resourcemanager.hpp>
+
 #include "errormarker.hpp"
 #include "imagemanager.hpp"
 #include "niffilemanager.hpp"
@@ -459,6 +461,7 @@ namespace Resource
         , mImageManager(imageManager)
         , mNifFileManager(nifFileManager)
         , mBgsmFileManager(bgsmFileManager)
+        , mResourceManager(new State::ResourceManager)
         , mMinFilter(osg::Texture::LINEAR_MIPMAP_LINEAR)
         , mMagFilter(osg::Texture::LINEAR)
         , mMaxAnisotropy(1)
@@ -1114,6 +1117,11 @@ namespace Resource
         return mImageManager;
     }
 
+    std::shared_ptr<State::ResourceManager> SceneManager::getResourceManager()
+    {
+        return mResourceManager;
+    }
+
     void SceneManager::setParticleSystemMask(unsigned int mask)
     {
         mParticleSystemMask = mask;
@@ -1231,7 +1239,7 @@ namespace Resource
     osg::ref_ptr<Shader::ShaderVisitor> SceneManager::createShaderVisitor(const std::string& shaderPrefix)
     {
         osg::ref_ptr<Shader::ShaderVisitor> shaderVisitor(
-            new Shader::ShaderVisitor(*mShaderManager.get(), *mImageManager, shaderPrefix));
+            new Shader::ShaderVisitor(*mResourceManager, *mShaderManager.get(), *mImageManager, shaderPrefix));
         shaderVisitor->setForceShaders(mForceShaders);
         shaderVisitor->setAutoUseNormalMaps(mAutoUseNormalMaps);
         shaderVisitor->setNormalMapPattern(mNormalMapPattern);

@@ -21,6 +21,7 @@
 #include <components/debug/debuglog.hpp>
 #include <components/misc/osguservalues.hpp>
 #include <components/misc/strings/algorithm.hpp>
+#include <components/nifosg/particle.hpp>
 #include <components/resource/imagemanager.hpp>
 #include <components/sceneutil/glextensions.hpp>
 #include <components/sceneutil/morphgeometry.hpp>
@@ -31,6 +32,9 @@
 #include <components/settings/settings.hpp>
 #include <components/stereo/stereomanager.hpp>
 #include <components/vfs/manager.hpp>
+
+#include <components/state/material.hpp>
+#include <components/state/resourcemanager.hpp>
 
 #include "removedalphafunc.hpp"
 #include "shadermanager.hpp"
@@ -173,28 +177,8 @@ namespace Shader
         std::unordered_map<unsigned int, AttributeSet> mTextureAttributes;
     };
 
-    ShaderVisitor::ShaderRequirements::ShaderRequirements()
-        : mShaderRequired(false)
-        , mColorMode(0)
-        , mMaterialOverridden(false)
-        , mAlphaTestOverridden(false)
-        , mAlphaBlendOverridden(false)
-        , mAlphaFunc(GL_ALWAYS)
-        , mAlphaRef(1.0)
-        , mAlphaBlend(false)
-        , mBlendFuncOverridden(false)
-        , mAdditiveBlending(false)
-        , mDiffuseHeight(false)
-        , mNormalHeight(false)
-        , mReconstructNormalZ(false)
-        , mTexStageRequiringTangents(-1)
-        , mSoftParticles(false)
-        , mNode(nullptr)
-    {
-    }
-
-    ShaderVisitor::ShaderVisitor(
-        ShaderManager& shaderManager, Resource::ImageManager& imageManager, const std::string& defaultShaderPrefix)
+    ShaderVisitor::ShaderVisitor(State::ResourceManager& resourceManager, ShaderManager& shaderManager,
+        Resource::ImageManager& imageManager, const std::string& defaultShaderPrefix)
         : osg::NodeVisitor(TRAVERSE_ALL_CHILDREN)
         , mForceShaders(false)
         , mAllowedToModifyStateSets(true)
@@ -204,6 +188,7 @@ namespace Shader
         , mConvertAlphaTestToAlphaToCoverage(false)
         , mAdjustCoverageForAlphaTest(false)
         , mSupportsNormalsRT(false)
+        , mResourceManager(resourceManager)
         , mShaderManager(shaderManager)
         , mImageManager(imageManager)
         , mDefaultShaderPrefix(defaultShaderPrefix)
@@ -365,6 +350,14 @@ namespace Shader
                                     mRequirements.back().mTexStageRequiringTangents = unit;
                                 }
                                 diffuseMap = texture;
+                                mRequirements.back().mDiffuseMap = dynamic_cast<osg::Texture2D*>(
+                                    stateset->getTextureAttribute(unit, osg::StateAttribute::TEXTURE));
+
+                                if (!writableStateSet)
+                                    writableStateSet = getWritableStateSet(node);
+                                // As well as gloss maps
+                                writableStateSet->setTextureMode(unit, GL_TEXTURE_2D, osg::StateAttribute::OFF);
+                                writableStateSet->removeTextureAttribute(unit, osg::StateAttribute::TEXTURE);
                             }
                             else if (texName == "specularMap")
                                 specularMap = texture;
@@ -514,33 +507,13 @@ namespace Shader
                         if (it->second.second & osg::StateAttribute::OVERRIDE)
                             mRequirements.back().mMaterialOverridden = true;
 
-                        const osg::Material* mat = static_cast<const osg::Material*>(it->second.first.get());
-
-                        int colorMode;
-                        switch (mat->getColorMode())
+                        if (State::Material* mat = dynamic_cast<State::Material*>(it->second.first.get()))
                         {
-                            case osg::Material::OFF:
-                                colorMode = 0;
-                                break;
-                            case osg::Material::EMISSION:
-                                colorMode = 1;
-                                break;
-                            default:
-                            case osg::Material::AMBIENT_AND_DIFFUSE:
-                                colorMode = 2;
-                                break;
-                            case osg::Material::AMBIENT:
-                                colorMode = 3;
-                                break;
-                            case osg::Material::DIFFUSE:
-                                colorMode = 4;
-                                break;
-                            case osg::Material::SPECULAR:
-                                colorMode = 5;
-                                break;
+                            mRequirements.back().mMaterial = mat;
+                            if (!writableStateSet)
+                                writableStateSet = getWritableStateSet(node);
+                            writableStateSet->removeAttribute(osg::StateAttribute::MATERIAL);
                         }
-
-                        mRequirements.back().mColorMode = colorMode;
                     }
                 }
                 else if (it->first.first == osg::StateAttribute::ALPHAFUNC)
@@ -655,8 +628,14 @@ namespace Shader
         defineMap["parallax"] = reqs.mNormalHeight ? "1" : "0";
         defineMap["reconstructNormalZ"] = reqs.mReconstructNormalZ ? "1" : "0";
 
-        writableStateSet->addUniform(new osg::Uniform("colorMode", reqs.mColorMode));
-        addedState->addUniform("colorMode");
+        // writableStateSet->addUniform(new osg::Uniform("colorMode", reqs.mMaterial->mColorMode));
+        // addedState->addUniform("colorMode");
+
+        // writableStateSet->addUniform(new osg::Uniform("specStrength", reqs.mMaterial->mSpecularStrength));
+        // addedState->addUniform("specStrength");
+
+        // writableStateSet->addUniform(new osg::Uniform("emissiveMult", reqs.mMaterial->mEmissiveMultiplier));
+        // addedState->addUniform("emissiveMult");
 
         defineMap["alphaFunc"] = std::to_string(reqs.mAlphaFunc);
 
@@ -769,6 +748,9 @@ namespace Shader
 
         for (const auto& [unit, name] : reqs.mTextures)
         {
+            if (name == "diffuse")
+                continue;
+
             writableStateSet->addUniform(new osg::Uniform(name.c_str(), unit), osg::StateAttribute::ON);
             addedState->addUniform(name);
         }
@@ -886,6 +868,20 @@ namespace Shader
         bool generateTangents = reqs.mTexStageRequiringTangents != -1;
         bool changed = false;
 
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // We can't use BIND_OVERALL because it will break when geometry is merged
+        std::size_t materialIndex = mResourceManager.registerMaterial(reqs.mMaterial);
+        std::size_t textureIndex = reqs.mDiffuseMap ? mResourceManager.registerTexture(reqs.mDiffuseMap) : 0;
+        osg::ref_ptr<osg::Vec4Array> vertexAttrib
+            = new osg::Vec4Array(sourceGeometry.getVertexArray()->getNumElements());
+        for (size_t i = 0; i < vertexAttrib->size(); ++i)
+        {
+            (*vertexAttrib)[i] = osg::Vec4f(materialIndex, textureIndex, 0, 0);
+        }
+        sourceGeometry.setVertexAttribArray(7, vertexAttrib, osg::Array::BIND_PER_VERTEX);
+        changed = true;
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
         if (mAllowedToModifyStateSets && (useShader || generateTangents))
         {
             // make sure that all UV sets are there
@@ -967,6 +963,18 @@ namespace Shader
 
             if (drawable.getStateSet())
                 applyStateSet(drawable.getStateSet(), drawable);
+
+            if (auto* particleSys = dynamic_cast<NifOsg::ParticleSystem*>(&drawable))
+            {
+                std::size_t materialIndex = mResourceManager.registerMaterial(mRequirements.back().mMaterial);
+                std::size_t textureIndex = mRequirements.back().mDiffuseMap
+                    ? mResourceManager.registerTexture(mRequirements.back().mDiffuseMap)
+                    : 0;
+                osg::ref_ptr<osg::Vec4Array> vertexAttrib = new osg::Vec4Array(1);
+                (*vertexAttrib)[0] = osg::Vec4f(materialIndex, textureIndex, 0, 0);
+                vertexAttrib->setBinding(osg::Array::BIND_OVERALL);
+                particleSys->mMaterialArray = vertexAttrib;
+            }
         }
 
         const ShaderRequirements& reqs = mRequirements.back();

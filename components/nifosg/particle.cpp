@@ -112,6 +112,7 @@ namespace NifOsg
     ParticleSystem::ParticleSystem(const ParticleSystem& copy, const osg::CopyOp& copyop)
         : osgParticle::ParticleSystem(copy, copyop)
         , mQuota(copy.mQuota)
+        , mMaterialArray(copy.mMaterialArray)
     {
         mNormalArray = new osg::Vec3Array(1);
         mNormalArray->setBinding(osg::Array::BIND_OVERALL);
@@ -145,6 +146,10 @@ namespace NifOsg
         else
         {
             state.getAttributeDispatchers().activateNormalArray(mNormalArray);
+        }
+        if (mMaterialArray)
+        {
+            state.getAttributeDispatchers().activateVertexAttribArray(7, mMaterialArray);
         }
         osgParticle::ParticleSystem::drawImplementation(renderInfo);
     }

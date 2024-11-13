@@ -47,6 +47,11 @@ namespace Shader
     class ShaderVisitor;
 }
 
+namespace State
+{
+    class ResourceManager;
+}
+
 namespace Resource
 {
     class TemplateRef : public osg::Object
@@ -198,6 +203,8 @@ namespace Resource
 
         Resource::ImageManager* getImageManager();
 
+        std::shared_ptr<State::ResourceManager> getResourceManager();
+
         /// @param mask The node mask to apply to loaded particle system nodes.
         void setParticleSystemMask(unsigned int mask);
 
@@ -261,6 +268,7 @@ namespace Resource
         Resource::ImageManager* mImageManager;
         Resource::NifFileManager* mNifFileManager;
         Resource::BgsmFileManager* mBgsmFileManager;
+        std::shared_ptr<State::ResourceManager> mResourceManager;
 
         osg::Texture::FilterMode mMinFilter;
         osg::Texture::FilterMode mMagFilter;

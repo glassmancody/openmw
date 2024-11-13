@@ -56,6 +56,8 @@
 #include <components/detournavigator/navigator.hpp>
 #include <components/detournavigator/navmeshcacheitem.hpp>
 
+#include <components/state/gpustate.hpp>
+
 #include "../mwworld/cellstore.hpp"
 #include "../mwworld/class.hpp"
 #include "../mwworld/groundcoverstore.hpp"
@@ -448,6 +450,9 @@ namespace MWRender
         globalDefines["numViews"] = "1";
         globalDefines["disableNormals"] = "1";
 
+        globalDefines["legacyBindings"] = "0";
+        globalDefines["diffuseMap"] = "0";
+
         for (auto itr = lightDefines.begin(); itr != lightDefines.end(); itr++)
             globalDefines[itr->first] = itr->second;
 
@@ -549,6 +554,7 @@ namespace MWRender
         sceneRoot->getOrCreateStateSet()->addUniform(new osg::Uniform("emissiveMult", 1.f));
         sceneRoot->getOrCreateStateSet()->addUniform(new osg::Uniform("specStrength", 1.f));
         sceneRoot->getOrCreateStateSet()->addUniform(new osg::Uniform("distortionStrength", 0.f));
+        sceneRoot->getOrCreateStateSet()->addUniform(new osg::Uniform("debugcolor", osg::Vec4f(-1, -1, -1, -1)));
 
         resourceSystem->getSceneManager()->setUpNormalsRTForStateSet(sceneRoot->getOrCreateStateSet(), true);
 
@@ -601,6 +607,9 @@ namespace MWRender
             mRootNode->getOrCreateStateSet()->setAttributeAndModes(new SceneUtil::AutoDepth, osg::StateAttribute::ON);
             mRootNode->getOrCreateStateSet()->setAttributeAndModes(clipcontrol, osg::StateAttribute::ON);
         }
+
+        mRootNode->insertChild(0, new State::GPUState(mResourceSystem->getSceneManager()->getResourceManager()));
+        mRootNode->getChild(0)->setNodeMask(Mask_RenderToTexture);
 
         SceneUtil::setCameraClearDepth(mViewer->getCamera());
 

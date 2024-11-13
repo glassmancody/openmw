@@ -1,4 +1,4 @@
-#version 120
+#version 430 compatibility
 
 #if @useUBO
     #extension GL_ARB_uniform_buffer_object : require
@@ -65,12 +65,14 @@ varying vec3 passNormal;
 varying vec4 passTangent;
 #endif
 
-#include "vertexcolors.glsl"
 #include "shadows_vertex.glsl"
 #include "compatibility/normals.glsl"
 
 #include "lib/light/lighting.glsl"
 #include "lib/view/depth.glsl"
+
+#include "lib/material/colormodes.glsl"
+#include "lib/material/vertexcolors.glsl"
 
 #if @particleOcclusion
 varying vec3 orthoDepthMapCoord;
@@ -81,6 +83,8 @@ uniform mat4 osg_ViewMatrixInverse;
 
 void main(void)
 {
+    assignMaterials();
+
 #if @particleOcclusion
     mat4 model = osg_ViewMatrixInverse * gl_ModelViewMatrix;
     orthoDepthMapCoord = ((depthSpaceMatrix * model) * vec4(gl_Vertex.xyz, 1.0)).xyz;
@@ -148,13 +152,14 @@ void main(void)
 #endif
 
 #if !PER_PIXEL_LIGHTING
+    Material material = getMaterial();
     vec3 diffuseLight, ambientLight, specularLight;
-    doLighting(viewPos.xyz, viewNormal, gl_FrontMaterial.shininess, diffuseLight, ambientLight, specularLight, shadowDiffuseLighting, shadowSpecularLighting);
-    passLighting = getDiffuseColor().xyz * diffuseLight + getAmbientColor().xyz * ambientLight + getEmissionColor().xyz * emissiveMult;
-    passSpecular = getSpecularColor().xyz * specularLight * specStrength;
+    doLighting(viewPos.xyz, viewNormal, material.shininess, diffuseLight, ambientLight, specularLight, shadowDiffuseLighting, shadowSpecularLighting);
+    passLighting = getDiffuseColor(material).xyz * diffuseLight + getAmbientColor(material).xyz * ambientLight + getEmissionColor(material).xyz * material.emissiveMult;
+    passSpecular = getSpecularColor(material).xyz * specularLight * material.specStrength;
     clampLightingResult(passLighting);
-    shadowDiffuseLighting *= getDiffuseColor().xyz;
-    shadowSpecularLighting *= getSpecularColor().xyz * specStrength;
+    shadowDiffuseLighting *= getDiffuseColor(material).xyz;
+    shadowSpecularLighting *= getSpecularColor(material).xyz * material.specStrength;
 #endif
 
 #if (@shadows_enabled)

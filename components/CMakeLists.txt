@@ -476,6 +476,12 @@ add_component_dir(serialization
     sizeaccumulator
     )
 
+add_component_dir(state
+    gpustate
+    resourcemanager
+    material
+)
+
 add_component_dir(sqlite3
     db
     request

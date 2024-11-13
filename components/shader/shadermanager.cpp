@@ -609,16 +609,24 @@ namespace Shader
         {
             if (!programTemplate)
                 programTemplate = mProgramTemplate;
-            osg::ref_ptr<osg::Program> program
-                = programTemplate ? cloneProgram(programTemplate) : osg::ref_ptr<osg::Program>(new osg::Program);
-            program->addShader(vertexShader);
-            program->addShader(fragmentShader);
-            addLinkedShaders(vertexShader, program);
-            addLinkedShaders(fragmentShader, program);
-
-            found = mPrograms.insert(std::make_pair(std::make_pair(vertexShader, fragmentShader), program)).first;
+            found = mPrograms
+                        .insert(std::make_pair(std::make_pair(vertexShader, fragmentShader),
+                            createProgram(vertexShader, fragmentShader, programTemplate)))
+                        .first;
         }
         return found->second;
+    }
+
+    osg::ref_ptr<osg::Program> ShaderManager::createProgram(osg::ref_ptr<osg::Shader> vertexShader,
+        osg::ref_ptr<osg::Shader> fragmentShader, const osg::Program* programTemplate)
+    {
+        osg::ref_ptr<osg::Program> program
+            = programTemplate ? cloneProgram(programTemplate) : osg::ref_ptr<osg::Program>(new osg::Program);
+        program->addShader(vertexShader);
+        program->addShader(fragmentShader);
+        addLinkedShaders(vertexShader, program);
+        addLinkedShaders(fragmentShader, program);
+        return program;
     }
 
     osg::ref_ptr<osg::Program> ShaderManager::cloneProgram(const osg::Program* src)

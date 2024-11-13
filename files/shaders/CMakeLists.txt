@@ -20,14 +20,22 @@ set(SHADER_FILES
     lib/core/fragment.glsl
     lib/core/fragment.h.glsl
     lib/core/fragment_multiview.glsl
+    lib/core/fragment_bindless.glsl
     lib/core/vertex.glsl
     lib/core/vertex.h.glsl
     lib/core/vertex_multiview.glsl
+    lib/core/vertex_bindless.glsl
     lib/light/lighting.glsl
     lib/light/lighting_util.glsl
     lib/sky/passes.glsl
     lib/material/parallax.glsl
     lib/material/alpha.glsl
+    lib/material/colormodes.glsl
+    lib/material/vertexcolors.glsl
+    lib/material/properties_legacy.glsl
+    lib/material/bindings.glsl
+    lib/material/material.glsl
+    lib/texture/bindings.glsl
     compatibility/ripples_blobber.frag
     compatibility/ripples_simulate.frag
     compatibility/fog.glsl
