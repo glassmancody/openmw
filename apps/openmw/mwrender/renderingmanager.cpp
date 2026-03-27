@@ -1,7 +1,6 @@
 #include "renderingmanager.hpp"
 
 #include <cstdlib>
-#include <limits>
 
 #include <osg/ClipControl>
 #include <osg/ComputeBoundsVisitor>
@@ -153,19 +152,20 @@ namespace MWRender
 
         // Let LightManager choose which backend to use based on our hint.
         // Ultimately dependent on support for various OpenGL extensions.
-        osg::ref_ptr<SceneUtil::LightManager> sceneRoot = new SceneUtil::LightManager(SceneUtil::LightSettings{
-            .mLightingMethod = Settings::shaders().mLightingMethod,
-            .mMaxLights = Settings::shaders().mMaxLights,
-            .mMaximumLightDistance = Settings::shaders().mMaximumLightDistance,
-            .mLightFadeStart = Settings::shaders().mLightFadeStart,
-            .mLightBoundsMultiplier = Settings::shaders().mLightBoundsMultiplier,
-        });
+        osg::ref_ptr<SceneUtil::LightManager> sceneRoot = new SceneUtil::LightManager(
+            SceneUtil::LightSettings{
+                .mLightingMethod = Settings::shaders().mLightingMethod,
+                .mMaxLights = Settings::shaders().mMaxLights,
+                .mMaximumLightDistance = Settings::shaders().mMaximumLightDistance,
+                .mLightFadeStart = Settings::shaders().mLightFadeStart,
+                .mLightBoundsMultiplier = Settings::shaders().mLightBoundsMultiplier,
+            },
+            resourceSystem);
         resourceSystem->getSceneManager()->setLightingMethod(sceneRoot->getLightingMethod());
         resourceSystem->getSceneManager()->setSupportedLightingMethods(sceneRoot->getSupportedLightingMethods());
 
         sceneRoot->setLightingMask(Mask_Lighting);
         mSceneRoot = sceneRoot;
-        sceneRoot->setStartLight(1);
         sceneRoot->setNodeMask(Mask_Scene);
         sceneRoot->setName("Scene Root");
 
@@ -315,8 +315,6 @@ namespace MWRender
                 Shader::ShaderManager::Slot::SkyTexture);
             mPerViewUniformStateUpdater->enableSkyRTT(skyTextureUnit, mSky->getSkyRTT());
         }
-
-        source->setStateSetModes(*mRootNode->getOrCreateStateSet(), osg::StateAttribute::ON);
 
         osg::Camera::CullingMode cullingMode = osg::Camera::DEFAULT_CULLING | osg::Camera::FAR_PLANE_CULLING;
 
@@ -1189,6 +1187,8 @@ namespace MWRender
 
         if (mNightEyeFactor > 0.f)
             color += osg::Vec4f(0.7f, 0.7f, 0.7f, 0.0f) * mNightEyeFactor;
+
+        mSunLight->setAmbient(color);
 
         mPostProcessor->getStateUpdater()->setAmbientColor(color);
         mStateUpdater->setAmbientColor(color);

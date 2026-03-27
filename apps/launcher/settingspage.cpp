@@ -337,7 +337,7 @@ bool Launcher::SettingsPage::loadSettings()
             case SceneUtil::LightingMethod::PerObjectUniform:
                 lightingMethod = 0;
                 break;
-            case SceneUtil::LightingMethod::SingleUBO:
+            case SceneUtil::LightingMethod::Clustered:
                 lightingMethod = 1;
                 break;
         }
@@ -586,7 +586,7 @@ void Launcher::SettingsPage::saveSettings()
 
         static constexpr std::array<SceneUtil::LightingMethod, 2> lightingMethodMap = {
             SceneUtil::LightingMethod::PerObjectUniform,
-            SceneUtil::LightingMethod::SingleUBO,
+            SceneUtil::LightingMethod::Clustered,
         };
         Settings::shaders().mLightingMethod.set(lightingMethodMap[lightingMethodComboBox->currentIndex()]);
 

@@ -95,7 +95,7 @@ namespace Settings
             {
                 case SceneUtil::LightingMethod::PerObjectUniform:
                     return "shaders compatibility";
-                case SceneUtil::LightingMethod::SingleUBO:
+                case SceneUtil::LightingMethod::Clustered:
                     return "shaders";
             }
 
@@ -549,7 +549,7 @@ namespace Settings
         if (value == "shaders compatibility")
             return SceneUtil::LightingMethod::PerObjectUniform;
         if (value == "shaders")
-            return SceneUtil::LightingMethod::SingleUBO;
+            return SceneUtil::LightingMethod::Clustered;
 
         constexpr const char* fallback = "shaders compatibility";
         Log(Debug::Warning) << "Unknown lighting method '" << value << "', returning fallback '" << fallback << "'";

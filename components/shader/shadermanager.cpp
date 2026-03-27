@@ -596,6 +596,8 @@ namespace Shader
                 = programTemplate ? cloneProgram(programTemplate) : osg::ref_ptr<osg::Program>(new osg::Program);
             program->addShader(vertexShader);
             program->addShader(fragmentShader);
+            program->setName(std::format("{} {}", vertexShader ? vertexShader->getName() : "null",
+                fragmentShader ? fragmentShader->getName() : "null"));
             addLinkedShaders(vertexShader, program);
             addLinkedShaders(fragmentShader, program);
 

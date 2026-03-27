@@ -1,14 +1,9 @@
 #version 120
 
-#if @useUBO
-    #extension GL_ARB_uniform_buffer_object : require
-#endif
-
 #if @useGPUShader4
     #extension GL_EXT_gpu_shader4: require
 #endif
 
-#include "lib/core/vertex.h.glsl"
 #if @diffuseMap
 varying vec2 diffuseMapUV;
 #endif
@@ -65,11 +60,12 @@ varying vec3 passNormal;
 varying vec4 passTangent;
 #endif
 
+#include "lib/core/vertex.h.glsl"
+#include "lib/light/clamp.glsl"
+
 #include "vertexcolors.glsl"
 #include "shadows_vertex.glsl"
 #include "compatibility/normals.glsl"
-
-#include "lib/light/lighting.glsl"
 #include "lib/view/depth.glsl"
 
 #if @particleOcclusion
@@ -149,10 +145,10 @@ void main(void)
 
 #if !PER_PIXEL_LIGHTING
     vec3 diffuseLight, ambientLight, specularLight;
-    doLighting(viewPos.xyz, viewNormal, gl_FrontMaterial.shininess, diffuseLight, ambientLight, specularLight, shadowDiffuseLighting, shadowSpecularLighting);
+    doLighting(clipToScreen(gl_Position), viewPos.xyz, viewNormal, gl_FrontMaterial.shininess, diffuseLight, ambientLight, specularLight, shadowDiffuseLighting, shadowSpecularLighting);
     passLighting = getDiffuseColor().xyz * diffuseLight + getAmbientColor().xyz * ambientLight + getEmissionColor().xyz * emissiveMult;
     passSpecular = getSpecularColor().xyz * specularLight * specStrength;
-    clampLightingResult(passLighting);
+    clampLighting(passLighting);
     shadowDiffuseLighting *= getDiffuseColor().xyz;
     shadowSpecularLighting *= getSpecularColor().xyz * specStrength;
 #endif

@@ -108,7 +108,7 @@ Shaders Settings
 
    Controls internal light source handling:
    - `shaders compatibility`: recommended for older hardware.
-   - `shaders`: modern lighting approach, higher light counts, better for modern GPUs.
+   - `shaders`: virtually unlimited light counts, better for modern GPUs. Utilizes clustered lighting.
 
 .. omw-setting::
    :title: light bounds multiplier
@@ -119,6 +119,10 @@ Shaders Settings
 
    Multiplier for point light bounding sphere radius, affecting light transition smoothness and performance.
 
+   .. note::
+
+      This setting is only applicable when lighting method is set to 'shaders compatibility'
+
 .. omw-setting::
    :title: classic falloff
    :type: boolean
@@ -128,6 +132,10 @@ Shaders Settings
 
    Use traditional point light attenuation without early fade out.
    Reduces lighting seams but may darken the scene.
+
+   .. note::
+
+      This setting is only applicable when lighting method is set to 'shaders compatibility'
 
 .. omw-setting::
    :title: match sunlight to sun
@@ -166,6 +174,10 @@ Shaders Settings
 
    Maximum lights affecting each object.
    Too high values may reduce performance unless using 'shaders' method.
+
+   .. note::
+
+      This setting is only applicable when lighting method is set to 'shaders compatibility'
 
 .. omw-setting::
    :title: minimum interior brightness
@@ -212,7 +224,7 @@ Shaders Settings
    :location: :bdg-success:`Launcher > Settings > Visuals > Shaders`
 
    Prevents rain and snow clipping through ceilings by using an extra render pass.
-   
+
    .. warning::
 
       Experimental and may cause visual oddities.

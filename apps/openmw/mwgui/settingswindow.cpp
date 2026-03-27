@@ -70,7 +70,7 @@ namespace
             case SceneUtil::LightingMethod::PerObjectUniform:
                 result = "#{OMWEngine:LightingMethodShadersCompatibility}";
                 break;
-            case SceneUtil::LightingMethod::SingleUBO:
+            case SceneUtil::LightingMethod::Clustered:
             default:
                 result = "#{OMWEngine:LightingMethodShaders}";
                 break;
@@ -855,7 +855,7 @@ namespace MWGui
 
         std::array<SceneUtil::LightingMethod, 2> methods = {
             SceneUtil::LightingMethod::PerObjectUniform,
-            SceneUtil::LightingMethod::SingleUBO,
+            SceneUtil::LightingMethod::Clustered,
         };
 
         for (const auto& method : methods)

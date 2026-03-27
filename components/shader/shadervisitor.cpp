@@ -672,8 +672,6 @@ namespace Shader
 
         bool simpleLighting = false;
         node.getUserValue("simpleLighting", simpleLighting);
-        if (simpleLighting)
-            defineMap["endLight"] = "0";
 
         if (simpleLighting || dynamic_cast<osgParticle::ParticleSystem*>(&node))
             defineMap["forcePPL"] = "0";

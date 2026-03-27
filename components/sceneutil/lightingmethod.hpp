@@ -6,7 +6,7 @@ namespace SceneUtil
     enum class LightingMethod
     {
         PerObjectUniform,
-        SingleUBO,
+        Clustered,
     };
 }
 

@@ -640,6 +640,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" OR CMAKE_CXX_COMPILER_FRONTEND_VARIANT
         4127 # Conditional expression is constant
         4996 # Function was declared deprecated
         5054 # Deprecated operations between enumerations of different types caused by Qt headers
+        4324 # Structure was padded due to alignment specifier
         )
 
     foreach(d ${WARNINGS_DISABLE})

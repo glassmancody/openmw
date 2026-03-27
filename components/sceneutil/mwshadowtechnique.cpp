@@ -961,7 +961,7 @@ void SceneUtil::MWShadowTechnique::copyShadowMap(osgUtil::CullVisitor& cv, ViewD
     // To achieve this i first copy all data that is not specific to this cv's camera and thus read-only,
     // trusting openmw and osg won't overwrite that data before this frame is done rendering.
     // This works due to the double buffering of CullVisitors by osg, but also requires that cull passes are serialized (relative to one another).
-    // Then initialize new copies of the data that will be written with view-specific data 
+    // Then initialize new copies of the data that will be written with view-specific data
     // (the stateset and the texgens).
 
     lhs->_viewDependentShadowMap = rhs->_viewDependentShadowMap;
@@ -1069,7 +1069,7 @@ void MWShadowTechnique::cull(osgUtil::CullVisitor& cv)
         _shadowedScene->osg::Group::traverse(cv);
         return;
     }
-    
+
     Uniforms& vddUniforms = vdd->_uniforms[cv.getTraversalNumber() % 2];
 
     ShadowSettings* settings = getShadowedScene()->getShadowSettings();
@@ -1124,7 +1124,7 @@ void MWShadowTechnique::cull(osgUtil::CullVisitor& cv)
         // are all done correctly.
         cv.computeNearPlane();
     }
- 
+
     // clamp the minZNear and maxZFar to those provided by ShadowSettings
     maxZFar = osg::minimum(settings->getMaximumShadowMapDistance(),maxZFar);
     if (minZNear>maxZFar) minZNear = maxZFar*settings->getMinimumShadowMapNearFarRatio();
@@ -1184,7 +1184,7 @@ void MWShadowTechnique::cull(osgUtil::CullVisitor& cv)
         reducedNear = minZNear;
         reducedFar = maxZFar;
     }
- 
+
     // return compute near far mode back to it's original settings
     cv.setComputeNearFarMode(cachedNearFarMode);
 
@@ -1430,7 +1430,7 @@ void MWShadowTechnique::cull(osgUtil::CullVisitor& cv)
                     double ciUniform = n + (f - n) * (i + 1) / m;
                     double ci = _splitPointUniformLogRatio * ciLog + (1.0 - _splitPointUniformLogRatio) * ciUniform + _splitPointDeltaBias;
                     cascadeFar = ci;
-                    
+
                     // work out where this is in light space
                     osg::Vec3d worldSpacePos = frustum.eye + frustum.frustumCenterLine * ci;
                     osg::Vec3d lightSpacePos = worldSpacePos * viewMatrix * projectionMatrix;
@@ -1489,7 +1489,7 @@ void MWShadowTechnique::cull(osgUtil::CullVisitor& cv)
                         camera->getProjectionMatrix() *
                         osg::Matrixd::translate(osg::Vec3d(0.0,-mid_r,0.0)) *
                         osg::Matrixd::scale(osg::Vec3d(1.0,2.0/range_r,1.0)));
-                    
+
                 }
             }
 
@@ -1529,7 +1529,7 @@ void MWShadowTechnique::cull(osgUtil::CullVisitor& cv)
                     vdsmCallback->getProjectionMatrix()->set(camera->getProjectionMatrix());
                 }
             }
- 
+
             // 4.4 compute main scene graph TexGen + uniform settings + setup state
             //
             {
@@ -2633,7 +2633,7 @@ bool MWShadowTechnique::cropShadowCameraToMainFrustum(Frustum& frustum, osg::Cam
     osg::Matrixd light_v = camera->getViewMatrix();
     osg::Matrixd light_vp = light_v * light_p;
     osg::Matrixd oldLightP = light_p;
-    
+
     ConvexHull convexHull;
     convexHull.setToFrustum(frustum);
 
@@ -3308,7 +3308,7 @@ void SceneUtil::MWShadowTechnique::DebugHUD::draw(osg::ref_ptr<osg::Texture2D> t
     // It might be possible to change shadow settings at runtime
     if (shadowMapNumber > mDebugCameras.size())
         addAnotherShadowMap();
-    
+
     osg::ref_ptr<osg::StateSet> stateSet = new osg::StateSet();
     stateSet->setTextureAttribute(sDebugTextureUnit, texture, osg::StateAttribute::ON);
 

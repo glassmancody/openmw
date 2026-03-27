@@ -452,7 +452,7 @@ namespace Resource
         , mMagFilter(osg::Texture::LINEAR)
         , mMaxAnisotropy(1.f)
         , mParticleSystemMask(~0u)
-        , mLightingMethod(SceneUtil::LightingMethod::PerObjectUniform)
+        , mLightingMethod(SceneUtil::LightingMethod::Clustered)
     {
     }
 
@@ -511,7 +511,7 @@ namespace Resource
     {
         mLightingMethod = method;
 
-        if (mLightingMethod == SceneUtil::LightingMethod::SingleUBO)
+        if (mLightingMethod == SceneUtil::LightingMethod::Clustered)
         {
             osg::ref_ptr<osg::Program> program = new osg::Program;
             program->addBindUniformBlock("LightBufferBinding", static_cast<int>(UBOBinding::LightBuffer));
