@@ -75,6 +75,8 @@ uniform mat4 depthSpaceMatrix;
 uniform mat4 osg_ViewMatrixInverse;
 #endif
 
+uniform vec2 screenRes;
+
 void main(void)
 {
 #if @particleOcclusion
@@ -145,7 +147,13 @@ void main(void)
 
 #if !PER_PIXEL_LIGHTING
     vec3 diffuseLight, ambientLight, specularLight;
-    doLighting(clipToScreen(gl_Position), viewPos.xyz, viewNormal, gl_FrontMaterial.shininess, diffuseLight, ambientLight, specularLight, shadowDiffuseLighting, shadowSpecularLighting);
+
+    vec2 screenCoord = clipToScreen(gl_Position);
+
+    // Handles edge case of off-screen vertices with clustered shading not being lit due to not mapping to any cluster
+    screenCoord = clamp(screenCoord, vec2(0.0), screenRes - vec2(1.0));
+
+    doLighting(screenCoord, viewPos.xyz, viewNormal, gl_FrontMaterial.shininess, diffuseLight, ambientLight, specularLight, shadowDiffuseLighting, shadowSpecularLighting);
     passLighting = getDiffuseColor().xyz * diffuseLight + getAmbientColor().xyz * ambientLight + getEmissionColor().xyz * emissiveMult;
     passSpecular = getSpecularColor().xyz * specularLight * specStrength;
     clampLighting(passLighting);
