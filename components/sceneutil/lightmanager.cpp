@@ -475,6 +475,7 @@ namespace SceneUtil
         defines["maxLightsInScene"] = std::to_string(getMaxLightsInScene());
         defines["lightingMethodPerObjectUniform"] = getLightingMethod() == LightingMethod::PerObjectUniform ? "1" : "0";
         defines["lightingMethodClustered"] = getLightingMethod() == LightingMethod::Clustered ? "1" : "0";
+        defines["useGPUShader4"] = std::to_string(getLightingMethod() == LightingMethod::Clustered);
 
         return defines;
     }

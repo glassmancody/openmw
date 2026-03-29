@@ -23,10 +23,6 @@ set(SHADER_FILES
     lib/core/vertex.glsl
     lib/core/vertex.h.glsl
     lib/core/vertex_multiview.glsl
-    lib/core/light/clustered.fragment.glsl
-    lib/core/light/clustered.vertex.glsl
-    lib/core/light/legacy.fragment.glsl
-    lib/core/light/legacy.vertex.glsl
     lib/light/bindings.glsl
     lib/light/bindings-legacy.glsl
     lib/light/clamp.glsl
