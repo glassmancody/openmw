@@ -673,8 +673,13 @@ namespace Shader
         bool simpleLighting = false;
         node.getUserValue("simpleLighting", simpleLighting);
 
-        if (simpleLighting || dynamic_cast<osgParticle::ParticleSystem*>(&node))
+        const bool isParticleSystem = dynamic_cast<osgParticle::ParticleSystem*>(&node);
+
+        if (simpleLighting || isParticleSystem)
             defineMap["forcePPL"] = "0";
+
+        if (isParticleSystem)
+            defineMap["particle"] = "1";
 
         bool particleOcclusion = false;
         node.getUserValue("particleOcclusion", particleOcclusion);

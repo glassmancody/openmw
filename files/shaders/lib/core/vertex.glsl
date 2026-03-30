@@ -52,7 +52,14 @@ void doLighting(vec2 screenCoord, vec3 viewPos, vec3 viewNormal, float shininess
 
 #if @lightingMethodClustered
     LightGrid grid = lightGrid[getClusterTileIndex(screenRes, gridSize, near, screenCoord, viewPos.z)];
-    for (uint i = 0u; i < grid.count; ++i) {
+    uint count = grid.count;
+
+#if @particle
+    uint MAX_LIGHTS_PARTICLE = 8u;
+    count = min(grid.count, MAX_LIGHTS_PARTICLE);
+#endif
+
+    for (uint i = 0u; i < count; ++i) {
         PointLight light = pointLight[lightIndexList[grid.offset + i]];
 #else
     for (int i = 0; i < PointLightCount; ++i) {

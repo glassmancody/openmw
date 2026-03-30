@@ -750,6 +750,7 @@ namespace Shader
         return {
             { "forcePPL", "0" },
             { "clamp", "1" },
+            { "particle", "0" },
             { "preLightEnv", "0" },
             { "radialFog", "0" },
             { "exponentialFog", "0" },

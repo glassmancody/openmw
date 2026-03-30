@@ -153,9 +153,14 @@ void main(void)
     // Handles edge case of off-screen vertices with clustered shading not being lit due to not mapping to any cluster
     screenCoord = clamp(screenCoord, vec2(0.0), screenRes - vec2(1.0));
 
-    doLighting(screenCoord, viewPos.xyz, viewNormal, gl_FrontMaterial.shininess, diffuseLight, ambientLight, specularLight, shadowDiffuseLighting, shadowSpecularLighting);
-    passLighting = getDiffuseColor().xyz * diffuseLight + getAmbientColor().xyz * ambientLight + getEmissionColor().xyz * emissiveMult;
-    passSpecular = getSpecularColor().xyz * specularLight * specStrength;
+    if (skipLighting()) {
+        passLighting = getEmissionColor().xyz * emissiveMult;
+        passSpecular = vec3(0.0);
+    } else {
+        doLighting(screenCoord, viewPos.xyz, viewNormal, gl_FrontMaterial.shininess, diffuseLight, ambientLight, specularLight, shadowDiffuseLighting, shadowSpecularLighting);
+        passLighting = getDiffuseColor().xyz * diffuseLight + getAmbientColor().xyz * ambientLight + getEmissionColor().xyz * emissiveMult;
+        passSpecular = getSpecularColor().xyz * specularLight * specStrength;
+    }
     clampLighting(passLighting);
     shadowDiffuseLighting *= getDiffuseColor().xyz;
     shadowSpecularLighting *= getSpecularColor().xyz * specStrength;

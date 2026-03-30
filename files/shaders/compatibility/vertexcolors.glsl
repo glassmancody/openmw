@@ -36,3 +36,11 @@ vec4 getSpecularColor()
         return passColor;
     return gl_FrontMaterial.specular;
 }
+
+bool skipLighting()
+{
+    bool blackAmbient = (colorMode == ColorMode_AmbientAndDiffuse || colorMode == ColorMode_Diffuse) && gl_FrontMaterial.diffuse.xyz == vec3(0.0);
+    bool blackDiffuse = (colorMode == ColorMode_AmbientAndDiffuse || colorMode == ColorMode_Ambient) && gl_FrontMaterial.ambient.xyz == vec3(0.0);
+
+    return blackAmbient && blackDiffuse;
+}
