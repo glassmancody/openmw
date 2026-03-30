@@ -320,8 +320,8 @@ namespace SceneUtil
         static constexpr size_t sGridSizeY = 8;
         static constexpr size_t sGridSizeZ = 24;
         static constexpr size_t sNumClusters = sGridSizeX * sGridSizeY * sGridSizeZ;
-        static constexpr size_t sMaxLightsPerCluster = 1024;
-        static constexpr size_t sWorkGroupSize = 1024;
+        static constexpr size_t sMaxLightsPerCluster = 512;
+        static constexpr size_t sWorkGroupSize = 512;
     };
 
     /// To receive lighting, objects must be decorated by a LightListCallback. Light list callbacks must be added via
