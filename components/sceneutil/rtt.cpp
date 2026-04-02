@@ -3,6 +3,7 @@
 
 #include <osg/Texture2D>
 #include <osg/Texture2DArray>
+#include <osg/Uniform>
 #include <osgUtil/CullVisitor>
 
 #include <components/sceneutil/color.hpp>
@@ -189,6 +190,9 @@ namespace SceneUtil
             camera->setRenderTargetImplementation(osg::Camera::FRAME_BUFFER_OBJECT);
             camera->setViewport(0, 0, mTextureWidth, mTextureHeight);
             SceneUtil::setCameraClearDepth(camera);
+
+            camera->getOrCreateStateSet()->addUniform(
+                new osg::Uniform("screenRes", osg::Vec2f(mTextureWidth, mTextureHeight)));
 
             setDefaults(camera);
 

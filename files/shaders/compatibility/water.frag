@@ -220,7 +220,10 @@ void main(void)
     gl_FragData[0].a = waterTransparency;
 #endif
 
-    gl_FragData[0].rgb += specular * sunSpec.rgb + rainSpecular;
+    vec3 pointSpecular = doSpecularLighting(gl_FragCoord.xy, (gl_ModelViewMatrix * vec4(position.xyz, 1.0)).xyz, normalize(gl_NormalMatrix * specNormal));
+    pointSpecular *= SPEC_BRIGHTNESS * shadow;
+
+    gl_FragData[0].rgb += specular * sunSpec.rgb + rainSpecular + pointSpecular;
 
 #if @waterRefraction && @wobblyShores
     // wobbly water: hard-fade into refraction texture at extremely low depth, with a wobble based on normal mapping

@@ -97,3 +97,26 @@ void doLighting(vec2 screenCoord, vec3 viewPos, vec3 viewNormal, float shininess
         calcPointLighting(light, viewDir, viewPos, viewNormal, shininess, diffuseLight, ambientLight, specularLight);
     }
 }
+
+#if @lightingMethodClustered
+vec3 doSpecularLighting(vec2 screenCoord, vec3 viewPos, vec3 viewNormal) {
+    vec3 specular = vec3(0.0);
+    vec3 viewDir = normalize(viewPos);
+    float shininess = 50.0;
+
+    LightGrid grid = lightGrid[getClusterTileIndex(screenRes, gridSize, near, screenCoord, viewPos.z)];
+    for (uint i = 0u; i < grid.count; ++i) {
+        PointLight light = pointLight[lightIndexList[grid.offset + i]];
+
+        vec3 lightPos = light.position.xyz - viewPos;
+        float lightDistance = length(lightPos);
+        vec3 lightDir = lightPos / lightDistance;
+        float attenuation = calcAttenuation(light, lightDistance);
+        specular += light.specular.xyz * specularIntensity(viewNormal, viewDir, shininess, lightDir) * attenuation;
+    }
+
+    return specular;
+}
+#else
+vec3 doSpecularLighting(vec2 screenCoord, vec3 viewPos, vec3 viewNormal) { return vec3(0.0); }
+#endif

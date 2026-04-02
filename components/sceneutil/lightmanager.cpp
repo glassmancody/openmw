@@ -4,11 +4,13 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
+#include <osg/Matrix>
+#include <osg/Vec2f>
+#include <string>
 
 #include <osg/Array>
 #include <osg/BufferObject>
 #include <osg/Drawable>
-#include <osg/Endian>
 #include <osg/Group>
 #include <osg/Matrixd>
 #include <osg/Matrixf>
@@ -19,25 +21,22 @@
 #include <osg/StateSet>
 #include <osg/Uniform>
 #include <osg/ValueObject>
-
 #include <osg/Vec3f>
 #include <osg/Vec4f>
 #include <osg/ref_ptr>
+
 #include <osgUtil/CullVisitor>
 
+#include "components/sceneutil/lightingmethod.hpp"
+#include <components/debug/debuglog.hpp>
+#include <components/misc/constants.hpp>
+#include <components/misc/hash.hpp>
 #include <components/resource/scenemanager.hpp>
 #include <components/sceneutil/glextensions.hpp>
 #include <components/sceneutil/util.hpp>
 #include <components/shader/shadermanager.hpp>
 
-#include <components/misc/constants.hpp>
-#include <components/misc/hash.hpp>
-
-#include <components/debug/debuglog.hpp>
-#include <string>
-
 #include "apps/openmw/mwrender/vismask.hpp"
-#include "components/sceneutil/lightingmethod.hpp"
 
 namespace
 {
@@ -184,14 +183,14 @@ namespace SceneUtil
             shaderManager.getProgram(nullptr,
                 shaderManager.getShader("core/lighting/cull.comp",
                     {
-                        { "workGroupSize", std::to_string(sWorkGroupSize) },
-                        { "maxLightsPerCluster", std::to_string(sMaxLightsPerCluster) },
+                        { "workGroupSize", std::to_string(mWorkGroupSize) },
+                        { "maxLightsPerCluster", std::to_string(mMaxLightsPerCluster) },
                     },
                     osg::Shader::COMPUTE)),
             osg::StateAttribute::ON);
 
-        mClusterComputeNode->setComputeGroups(sGridSizeX, sGridSizeY, sGridSizeZ);
-        mCullComputeNode->setComputeGroups(sNumClusters, 1, 1);
+        mClusterComputeNode->setComputeGroups(mGridSizeX, mGridSizeY, mGridSizeZ);
+        mCullComputeNode->setComputeGroups(mNumClusters, 1, 1);
 
         osg::ref_ptr<InvokeMemoryBarrier> memoryBarrier = new InvokeMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
@@ -200,7 +199,6 @@ namespace SceneUtil
 
         mClusterComputeNode->getOrCreateStateSet()->addUniform(
             new osg::Uniform("inverseProjectionMatrix", osg::Matrixf{}));
-        mClusterComputeNode->getOrCreateStateSet()->addUniform(new osg::Uniform("clusterFar", 1.f));
 
         mClusterComputeNode->setDrawCallback(memoryBarrier);
         root->addChild(mCullComputeNode);
@@ -208,16 +206,13 @@ namespace SceneUtil
 
         root->setCullingActive(false);
 
-        root->setNodeMask(MWRender::Mask_RenderToTexture);
-
-        lightManager->getOrCreateStateSet()->addUniform(
-            new osg::Uniform("gridSize", osg::Vec3f(sGridSizeX, sGridSizeY, sGridSizeZ)));
+        root->setNodeMask(MWRender::Mask_RenderToTexture | MWRender::Mask_Lighting);
 
         lightManager->addChild(root);
 
         for (size_t i = 0; i < mClusterSSBB.size(); ++i)
         {
-            osg::ref_ptr<osg::UByteArray> clusterData = new osg::UByteArray(sizeof(Cluster) * sNumClusters);
+            osg::ref_ptr<osg::UByteArray> clusterData = new osg::UByteArray(sizeof(Cluster) * mNumClusters);
             clusterData->setBufferObject(new osg::ShaderStorageBufferObject);
 
             mClusterSSBB[i] = new osg::ShaderStorageBufferBinding(1, clusterData, 0, clusterData->getTotalDataSize());
@@ -242,13 +237,15 @@ namespace SceneUtil
 
         auto& cache = mCache[cv->getCurrentCamera()];
 
+        const float clusterFar = Constants::CellSizeInUnits;
+
         if (node->getLightingMethod() == LightingMethod::Clustered)
         {
             // Ensure we rebuild the cluster grid only when the projection matrix changes
-            const bool rebuild = cache.mProjection[frameId] != cv->getCurrentCamera()->getProjectionMatrix();
+            const bool rebuild = cache.mProjection[frameId] != *cv->getProjectionMatrix();
             mClusterComputeNode->setNodeMask(rebuild ? ~0 : 0);
 
-            cache.mProjection[frameId] = cv->getCurrentCamera()->getProjectionMatrix();
+            cache.mProjection[frameId] = *cv->getProjectionMatrix();
 
             if (rebuild)
             {
@@ -257,13 +254,13 @@ namespace SceneUtil
                 double fovy, aspectRatio, near, _;
                 cache.mProjection[frameId].getPerspective(fovy, aspectRatio, near, _);
 
-                const osg::Matrixd projection = osg::Matrixd::perspective(fovy, aspectRatio, near, 8192.f);
+                const osg::Matrixd projection = osg::Matrixd::perspective(fovy, aspectRatio, near, clusterFar);
 
                 mClusterComputeNode->getStateSet()
                     ->getUniform("inverseProjectionMatrix")
                     ->set(osg::Matrixf::inverse(projection));
 
-                Log(Debug::Warning) << "Rebuilding Cluster Grid";
+                Log(Debug::Warning) << "Rebuilding clusters for: " << cv->getCurrentCamera()->getName();
             }
         }
 
@@ -277,34 +274,40 @@ namespace SceneUtil
             stateset->addUniform(new osg::Uniform("sun.ambient", osg::Vec4f{}));
             stateset->addUniform(new osg::Uniform("sun.specular", osg::Vec4f{}));
 
-            const int maxLightIndices = sMaxLightsPerCluster * sNumClusters;
-
-            for (size_t i = 0; i < cache.mPointLightSSBB.size(); ++i)
+            if (node->getLightingMethod() == LightingMethod::Clustered)
             {
-                cache.mGPULights[i] = new osg::BufferTemplate<std::vector<PointLight>>();
-                cache.mGPULights[i]->setBufferObject(new osg::ShaderStorageBufferObject);
+                // TODO: Need to dirty these if cluster is rebuilt
+                stateset->addUniform(new osg::Uniform("clusterFar", clusterFar));
+                stateset->addUniform(new osg::Uniform("gridSize", osg::Vec3f(mGridSizeX, mGridSizeY, mGridSizeZ)));
 
-                cache.mPointLightSSBB[i] = new osg::ShaderStorageBufferBinding(
-                    2, cache.mGPULights[i], 0, cache.mGPULights[i]->getTotalDataSize());
+                const int maxLightIndices = mMaxLightsPerCluster * mNumClusters;
 
-                osg::ref_ptr<osg::UIntArray> gridData = new osg::UIntArray(sNumClusters * 2);
-                gridData->setBufferObject(new osg::ShaderStorageBufferObject);
-                cache.mLightGridSSBB[i]
-                    = new osg::ShaderStorageBufferBinding(3, gridData, 0, gridData->getTotalDataSize());
+                for (size_t i = 0; i < cache.mPointLightSSBB.size(); ++i)
+                {
+                    cache.mGPULights[i] = new osg::BufferTemplate<std::vector<PointLight>>();
+                    cache.mGPULights[i]->setBufferObject(new osg::ShaderStorageBufferObject);
 
-                osg::ref_ptr<osg::UIntArray> indexData = new osg::UIntArray(maxLightIndices);
-                indexData->setBufferObject(new osg::ShaderStorageBufferObject);
-                cache.mLightIndexListSSBB[i]
-                    = new osg::ShaderStorageBufferBinding(4, indexData, 0, indexData->getTotalDataSize());
+                    cache.mPointLightSSBB[i] = new osg::ShaderStorageBufferBinding(
+                        2, cache.mGPULights[i], 0, cache.mGPULights[i]->getTotalDataSize());
 
-                osg::ref_ptr<osg::UIntArray> counterData = new osg::UIntArray(1);
-                counterData->setBufferObject(new osg::ShaderStorageBufferObject);
-                cache.mLightIndexCounterSSBB[frameId]
-                    = new osg::ShaderStorageBufferBinding(5, counterData, 0, counterData->getTotalDataSize());
+                    osg::ref_ptr<osg::UIntArray> gridData = new osg::UIntArray(mNumClusters * 2);
+                    gridData->setBufferObject(new osg::ShaderStorageBufferObject);
+                    cache.mLightGridSSBB[i]
+                        = new osg::ShaderStorageBufferBinding(3, gridData, 0, gridData->getTotalDataSize());
+
+                    osg::ref_ptr<osg::UIntArray> indexData = new osg::UIntArray(maxLightIndices);
+                    indexData->setBufferObject(new osg::ShaderStorageBufferObject);
+                    cache.mLightIndexListSSBB[i]
+                        = new osg::ShaderStorageBufferBinding(4, indexData, 0, indexData->getTotalDataSize());
+
+                    osg::ref_ptr<osg::UIntArray> counterData = new osg::UIntArray(1);
+                    counterData->setBufferObject(new osg::ShaderStorageBufferObject);
+                    cache.mLightIndexCounterSSBB[frameId]
+                        = new osg::ShaderStorageBufferBinding(5, counterData, 0, counterData->getTotalDataSize());
+                }
             }
         }
 
-        // Only update the light buffers the first traversal since all lights are shared per lightmanager
         if (frame != cache.mLastFrameNumber)
         {
             cache.mLastFrameNumber = frame;
@@ -377,8 +380,8 @@ namespace SceneUtil
         if (it != lightingMethodSettingMap.end())
             return it->second;
 
-        constexpr const char* fallback = "shaders compatibility";
-        Log(Debug::Warning) << "Unknown lighting method '" << value << "', returning fallback '" << fallback << "'";
+        Log(Debug::Warning) << "Unknown lighting method '" << value << "', returning fallback ''shaders compatibility'";
+
         return LightingMethod::PerObjectUniform;
     }
 

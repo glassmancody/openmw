@@ -316,12 +316,12 @@ namespace SceneUtil
 
         std::unordered_map<osg::Camera*, CacheData> mCache;
 
-        static constexpr size_t sGridSizeX = 16;
-        static constexpr size_t sGridSizeY = 8;
-        static constexpr size_t sGridSizeZ = 24;
-        static constexpr size_t sNumClusters = sGridSizeX * sGridSizeY * sGridSizeZ;
-        static constexpr size_t sMaxLightsPerCluster = 512;
-        static constexpr size_t sWorkGroupSize = 512;
+        const size_t mGridSizeX = 16;
+        const size_t mGridSizeY = 8;
+        const size_t mGridSizeZ = 24;
+        const size_t mNumClusters = mGridSizeX * mGridSizeY * mGridSizeZ;
+        const size_t mMaxLightsPerCluster = 512;
+        const size_t mWorkGroupSize = 512;
     };
 
     /// To receive lighting, objects must be decorated by a LightListCallback. Light list callbacks must be added via

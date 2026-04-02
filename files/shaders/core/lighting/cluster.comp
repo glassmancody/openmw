@@ -8,6 +8,7 @@ uniform float near;
 uniform mat4 inverseProjectionMatrix;
 uniform vec3 gridSize;
 uniform vec2 screenRes;
+uniform float clusterFar;
 
 vec3 lineIntersectionWithZPlane(vec3 startPoint, vec3 endPoint, float zDistance)
 {
@@ -28,9 +29,7 @@ vec3 screenToView(vec2 screenCoord)
 
 void main()
 {
-    const float far = 8192.0;
-
-    int tileIndex = int(gl_WorkGroupID.x + (gl_WorkGroupID.y * int(gridSize.x)) + (gl_WorkGroupID.z * int(gridSize.x) * int(gridSize.y)));
+    uint tileIndex = gl_WorkGroupID.x + (gl_WorkGroupID.y * uint(gridSize.x)) + (gl_WorkGroupID.z * uint(gridSize.x) * uint(gridSize.y));
     vec2 tileSize = screenRes / ivec2(gridSize.xy);
 
     vec2 minTile_screenspace = gl_WorkGroupID.xy * tileSize;
@@ -39,8 +38,8 @@ void main()
     vec3 minTile = screenToView(minTile_screenspace);
     vec3 maxTile = screenToView(maxTile_screenspace);
 
-    float planeNear = near * pow(far / near, gl_WorkGroupID.z / gridSize.z);
-    float planeFar = near * pow(far / near, (gl_WorkGroupID.z + 1) / gridSize.z);
+    float planeNear = near * pow(clusterFar / near, gl_WorkGroupID.z / gridSize.z);
+    float planeFar = near * pow(clusterFar / near, (gl_WorkGroupID.z + 1) / gridSize.z);
 
     vec3 minPointNear = lineIntersectionWithZPlane(vec3(0, 0, 0), minTile, planeNear);
     vec3 minPointFar = lineIntersectionWithZPlane(vec3(0, 0, 0), minTile, planeFar);
