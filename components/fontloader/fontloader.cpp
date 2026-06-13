@@ -365,8 +365,11 @@ namespace Gui
 
         MyGUI::ResourceTrueTypeFont* font = static_cast<MyGUI::ResourceTrueTypeFont*>(
             MyGUI::FactoryManager::getInstance().createObject("Resource", "ResourceTrueTypeFont"));
-        font->deserialization(resourceNode.current(), MyGUI::Version(3, 2, 0));
         font->setResourceName(fontId.mValue);
+        font->setShader("sdf");
+        font->setMsdfMode(true);
+        font->setMsdfRange(4);
+        font->deserialization(resourceNode.current(), MyGUI::Version(3, 2, 0));
         MyGUI::ResourceManager::getInstance().addResource(font);
 
         resolutionNode->setAttribute(

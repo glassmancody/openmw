@@ -100,6 +100,10 @@ namespace MyGUIPlatform
 
             mReadFrom = (mReadFrom + 1) % sNumBuffers;
             const std::vector<Batch>& vec = mBatchVector[mReadFrom];
+
+            osg::Program* lastAppliedProgram = nullptr;
+            osg::StateAttribute* mainProgram = mStateSet->getAttribute(osg::StateAttribute::PROGRAM);
+
             for (std::vector<Batch>::const_iterator it = vec.begin(); it != vec.end(); ++it)
             {
                 const Batch& batch = *it;
@@ -109,6 +113,18 @@ namespace MyGUIPlatform
                 {
                     state->pushStateSet(batch.mStateSet);
                     state->apply();
+                }
+
+                osg::StateAttribute* program = batch.mProgram ? batch.mProgram.get() : mainProgram;
+
+                if (program != lastAppliedProgram)
+                {
+                    state->applyAttribute(program);
+                    for (const auto& [name, stack] : state->getUniformMap())
+                    {
+                        if (!stack.uniformVec.empty())
+                            state->getLastAppliedProgramObject()->apply(*(stack.uniformVec.back().first));
+                    }
                 }
 
                 // A GUI element without an associated texture would be extremely rare.
@@ -210,6 +226,7 @@ namespace MyGUIPlatform
 
             // optional
             osg::ref_ptr<osg::StateSet> mStateSet;
+            osg::ref_ptr<osg::Program> mProgram;
 
             size_t mVertexCount;
         };
@@ -346,10 +363,10 @@ namespace MyGUIPlatform
     // ---------------------------------------------------------------------------
 
     RenderManager::RenderManager(
-        osgViewer::Viewer* viewer, osg::Group* sceneroot, Resource::ImageManager* imageManager, float scalingFactor)
+        osgViewer::Viewer* viewer, osg::Group* sceneroot, Resource::ResourceSystem* resourceSystem, float scalingFactor)
         : mViewer(viewer)
         , mSceneRoot(sceneroot)
-        , mImageManager(imageManager)
+        , mResourceSystem(resourceSystem)
         , mUpdate(false)
         , mIsInitialise(false)
         , mInvScalingFactor(1.f)
@@ -450,6 +467,8 @@ namespace MyGUIPlatform
                 mDrawable->setDataVariance(osg::Object::DYNAMIC); // only for this frame, reset in begin()
             if (!mInjectState && osgtexture->getInjectState())
                 batch.mStateSet = osgtexture->getInjectState();
+
+            batch.mProgram = osgtexture->getShader();
         }
         if (mInjectState)
             batch.mStateSet = mInjectState;
@@ -514,7 +533,7 @@ namespace MyGUIPlatform
 
     MyGUI::ITexture* RenderManager::createTexture(const std::string& name)
     {
-        const auto it = mTextures.insert_or_assign(name, OSGTexture(name, mImageManager)).first;
+        const auto it = mTextures.insert_or_assign(name, OSGTexture(name, mResourceSystem)).first;
         return &it->second;
     }
 

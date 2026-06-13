@@ -7,13 +7,17 @@
 
 #include <components/debug/debuglog.hpp>
 #include <components/resource/imagemanager.hpp>
+#include <components/resource/resourcesystem.hpp>
+#include <components/resource/scenemanager.hpp>
+#include <components/sceneutil/glextensions.hpp>
+#include <components/shader/shadermanager.hpp>
 
 namespace MyGUIPlatform
 {
 
-    OSGTexture::OSGTexture(const std::string& name, Resource::ImageManager* imageManager)
+    OSGTexture::OSGTexture(const std::string& name, Resource::ResourceSystem* resourceSystem)
         : mName(name)
-        , mImageManager(imageManager)
+        , mResourceSystem(resourceSystem)
         , mFormat(MyGUI::PixelFormat::Unknow)
         , mUsage(MyGUI::TextureUsage::Default)
         , mNumElemBytes(0)
@@ -23,7 +27,7 @@ namespace MyGUIPlatform
     }
 
     OSGTexture::OSGTexture(osg::Texture2D* texture, osg::StateSet* injectState)
-        : mImageManager(nullptr)
+        : mResourceSystem(nullptr)
         , mTexture(texture)
         , mInjectState(injectState)
         , mFormat(MyGUI::PixelFormat::Unknow)
@@ -92,10 +96,10 @@ namespace MyGUIPlatform
 
     void OSGTexture::loadFromFile(const std::string& fname)
     {
-        if (!mImageManager)
+        if (!mResourceSystem)
             throw std::runtime_error("No imagemanager set");
 
-        osg::ref_ptr<osg::Image> image(mImageManager->getImage(VFS::Path::Normalized(fname)));
+        osg::ref_ptr<osg::Image> image(mResourceSystem->getImageManager()->getImage(VFS::Path::Normalized(fname)));
         mTexture = new osg::Texture2D(image);
         mTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
         mTexture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
@@ -159,8 +163,11 @@ namespace MyGUIPlatform
         return nullptr;
     }
 
-    void OSGTexture::setShader(const std::string& /*shaderName*/)
+    void OSGTexture::setShader(const std::string& shaderName)
     {
-        Log(Debug::Warning) << "OSGTexture::setShader is not implemented";
+        std::string useGPUShader4 = SceneUtil::getGLExtensions().isGpuShader4Supported ? "1" : "0";
+
+        mProgram = mResourceSystem->getSceneManager()->getShaderManager().getProgram(
+            shaderName, { { "useGPUShader4", useGPUShader4 } });
     }
 }

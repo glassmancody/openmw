@@ -17,15 +17,11 @@ namespace osg
 }
 namespace Resource
 {
-    class ImageManager;
+    class ResourceSystem;
 }
 namespace MyGUI
 {
     class LogManager;
-}
-namespace VFS
-{
-    class Manager;
 }
 
 namespace MyGUIPlatform
@@ -38,8 +34,8 @@ namespace MyGUIPlatform
     class Platform
     {
     public:
-        Platform(osgViewer::Viewer* viewer, osg::Group* guiRoot, Resource::ImageManager* imageManager,
-            const VFS::Manager* vfs, float uiScalingFactor, VFS::Path::NormalizedView resourcePath,
+        Platform(osgViewer::Viewer* viewer, osg::Group* guiRoot, Resource::ResourceSystem* resourceSystem,
+            float uiScalingFactor, VFS::Path::NormalizedView resourcePath,
             const std::filesystem::path& logName = "MyGUI.log");
 
         ~Platform();

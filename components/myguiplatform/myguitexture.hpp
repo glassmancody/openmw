@@ -10,11 +10,12 @@ namespace osg
     class Image;
     class Texture2D;
     class StateSet;
+    class Program;
 }
 
 namespace Resource
 {
-    class ImageManager;
+    class ResourceSystem;
 }
 
 namespace MyGUIPlatform
@@ -23,11 +24,12 @@ namespace MyGUIPlatform
     class OSGTexture final : public MyGUI::ITexture
     {
         std::string mName;
-        Resource::ImageManager* mImageManager;
+        Resource::ResourceSystem* mResourceSystem;
 
         osg::ref_ptr<osg::Image> mLockedImage;
         osg::ref_ptr<osg::Texture2D> mTexture;
         osg::ref_ptr<osg::StateSet> mInjectState;
+        osg::ref_ptr<osg::Program> mProgram;
         MyGUI::PixelFormat mFormat;
         MyGUI::TextureUsage mUsage;
         size_t mNumElemBytes;
@@ -36,7 +38,7 @@ namespace MyGUIPlatform
         int mHeight;
 
     public:
-        OSGTexture(const std::string& name, Resource::ImageManager* imageManager);
+        OSGTexture(const std::string& name, Resource::ResourceSystem* resourceSystem);
         OSGTexture(osg::Texture2D* texture, osg::StateSet* injectState = nullptr);
         ~OSGTexture() override;
 
@@ -63,6 +65,7 @@ namespace MyGUIPlatform
 
         MyGUI::IRenderTarget* getRenderTarget() override;
 
+        osg::ref_ptr<osg::Program> getShader() const { return mProgram; }
         void setShader(const std::string& shaderName) override;
 
         /*internal:*/

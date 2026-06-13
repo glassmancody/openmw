@@ -7,7 +7,7 @@
 
 namespace Resource
 {
-    class ImageManager;
+    class ResourceSystem;
 }
 
 namespace Shader
@@ -39,7 +39,7 @@ namespace MyGUIPlatform
         osg::ref_ptr<osgViewer::Viewer> mViewer;
         osg::ref_ptr<osg::Group> mSceneRoot;
         osg::ref_ptr<Drawable> mDrawable;
-        Resource::ImageManager* mImageManager;
+        Resource::ResourceSystem* mResourceSystem;
 
         MyGUI::IntSize mViewSize;
         bool mUpdate;
@@ -57,7 +57,7 @@ namespace MyGUIPlatform
         osg::StateSet* mInjectState;
 
     public:
-        RenderManager(osgViewer::Viewer* viewer, osg::Group* sceneroot, Resource::ImageManager* imageManager,
+        RenderManager(osgViewer::Viewer* viewer, osg::Group* sceneroot, Resource::ResourceSystem* resourceSystem,
             float scalingFactor);
         virtual ~RenderManager();
 
