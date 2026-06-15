@@ -9,16 +9,18 @@ uniform sampler2D diffuseMap;
 varying vec2 diffuseMapUV;
 varying vec4 passColor;
 
-vec2 sqr(vec2 x) {
+vec2 sqr(vec2 x)
+{
     return x * x;
 }
 
-float median(float r, float g, float b) {
-	return max(min(r, g), min(max(r, g), b));
+float median(float r, float g, float b)
+{
+    return max(min(r, g), min(max(r, g), b));
 }
 
-float screenPxRange() {
-
+float screenPxRange()
+{
 #if @useGPUShader4
     vec2 size = textureSize2D(diffuseMap, 0).xy;
 #else
@@ -34,7 +36,7 @@ float screenPxRange() {
 
 void main()
 {
-	vec4 msdf = texture2D(diffuseMap, diffuseMapUV);
+    vec4 msdf = texture2D(diffuseMap, diffuseMapUV);
 
     float sd = median(msdf.r, msdf.g, msdf.b);
     float screenPxDistance = screenPxRange() * (sd - 0.5);
