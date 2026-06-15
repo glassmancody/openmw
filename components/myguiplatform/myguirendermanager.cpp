@@ -101,9 +101,6 @@ namespace MyGUIPlatform
             mReadFrom = (mReadFrom + 1) % sNumBuffers;
             const std::vector<Batch>& vec = mBatchVector[mReadFrom];
 
-            osg::Program* lastAppliedProgram = nullptr;
-            osg::StateAttribute* mainProgram = mStateSet->getAttribute(osg::StateAttribute::PROGRAM);
-
             for (std::vector<Batch>::const_iterator it = vec.begin(); it != vec.end(); ++it)
             {
                 const Batch& batch = *it;
@@ -113,18 +110,6 @@ namespace MyGUIPlatform
                 {
                     state->pushStateSet(batch.mStateSet);
                     state->apply();
-                }
-
-                osg::StateAttribute* program = batch.mProgram ? batch.mProgram.get() : mainProgram;
-
-                if (program != lastAppliedProgram)
-                {
-                    state->applyAttribute(program);
-                    for (const auto& [name, stack] : state->getUniformMap())
-                    {
-                        if (!stack.uniformVec.empty())
-                            state->getLastAppliedProgramObject()->apply(*(stack.uniformVec.back().first));
-                    }
                 }
 
                 // A GUI element without an associated texture would be extremely rare.
@@ -226,7 +211,6 @@ namespace MyGUIPlatform
 
             // optional
             osg::ref_ptr<osg::StateSet> mStateSet;
-            osg::ref_ptr<osg::Program> mProgram;
 
             size_t mVertexCount;
         };
@@ -463,12 +447,11 @@ namespace MyGUIPlatform
         if (OSGTexture* osgtexture = static_cast<OSGTexture*>(texture))
         {
             batch.mTexture = osgtexture->getTexture();
+            batch.mStateSet = osgtexture->getStateSet();
             if (batch.mTexture->getDataVariance() == osg::Object::DYNAMIC)
                 mDrawable->setDataVariance(osg::Object::DYNAMIC); // only for this frame, reset in begin()
             if (!mInjectState && osgtexture->getInjectState())
                 batch.mStateSet = osgtexture->getInjectState();
-
-            batch.mProgram = osgtexture->getShader();
         }
         if (mInjectState)
             batch.mStateSet = mInjectState;

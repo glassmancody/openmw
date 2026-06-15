@@ -29,6 +29,7 @@ namespace MyGUIPlatform
         osg::ref_ptr<osg::Image> mLockedImage;
         osg::ref_ptr<osg::Texture2D> mTexture;
         osg::ref_ptr<osg::StateSet> mInjectState;
+        osg::ref_ptr<osg::StateSet> mStateSet;
         osg::ref_ptr<osg::Program> mProgram;
         MyGUI::PixelFormat mFormat;
         MyGUI::TextureUsage mUsage;
@@ -67,6 +68,10 @@ namespace MyGUIPlatform
 
         osg::ref_ptr<osg::Program> getShader() const { return mProgram; }
         void setShader(const std::string& shaderName) override;
+
+        osg::StateSet* getStateSet() { return mStateSet; }
+
+        osg::StateSet* getOrCreateStateSet();
 
         /*internal:*/
         osg::Texture2D* getTexture() const { return mTexture.get(); }

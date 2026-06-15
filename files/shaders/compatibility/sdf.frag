@@ -1,10 +1,8 @@
 #version 120
 
-#if @useGPUShader4
-    #extension GL_EXT_gpu_shader4: require
-#endif
-
 uniform sampler2D diffuseMap;
+
+uniform vec2 unitRange;
 
 varying vec2 diffuseMapUV;
 varying vec4 passColor;
@@ -21,15 +19,6 @@ float median(float r, float g, float b)
 
 float screenPxRange()
 {
-#if @useGPUShader4
-    vec2 size = textureSize2D(diffuseMap, 0).xy;
-#else
-    vec2 size = vec2(256.0);
-#endif
-
-    const float pxRange = 4.0;
-
-    vec2 unitRange = vec2(pxRange) / size;
     vec2 screenTexSize = vec2(1.0) / sqrt(sqr(dFdx(diffuseMapUV)) + sqr(dFdy(diffuseMapUV)));
     return max(0.5 * dot(unitRange, screenTexSize), 1.0);
 }

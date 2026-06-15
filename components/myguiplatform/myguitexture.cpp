@@ -9,7 +9,6 @@
 #include <components/resource/imagemanager.hpp>
 #include <components/resource/resourcesystem.hpp>
 #include <components/resource/scenemanager.hpp>
-#include <components/sceneutil/glextensions.hpp>
 #include <components/shader/shadermanager.hpp>
 
 namespace MyGUIPlatform
@@ -165,9 +164,14 @@ namespace MyGUIPlatform
 
     void OSGTexture::setShader(const std::string& shaderName)
     {
-        std::string useGPUShader4 = SceneUtil::getGLExtensions().isGpuShader4Supported ? "1" : "0";
+        getOrCreateStateSet()->setAttributeAndModes(
+            mResourceSystem->getSceneManager()->getShaderManager().getProgram(shaderName));
+    }
 
-        mProgram = mResourceSystem->getSceneManager()->getShaderManager().getProgram(
-            shaderName, { { "useGPUShader4", useGPUShader4 } });
+    osg::StateSet* OSGTexture::getOrCreateStateSet()
+    {
+        if (!mStateSet)
+            mStateSet = new osg::StateSet;
+        return mStateSet;
     }
 }

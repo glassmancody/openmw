@@ -24,6 +24,7 @@
 
 #include <components/misc/strings/algorithm.hpp>
 
+#include <components/myguiplatform/myguitexture.hpp>
 #include <components/myguiplatform/scalinglayer.hpp>
 
 #include <components/settings/values.hpp>
@@ -357,7 +358,10 @@ namespace Gui
         else
             resolution = MyGUI::utility::parseInt(resolutionNode->findAttribute("value"));
 
-        resolutionNode->setAttribute("value", MyGUI::utility::toString(resolution * std::ceil(mScalingFactor)));
+        int msdfRange = 4;
+        MyGUI::xml::ElementPtr msdfRangeNode = getProperty(resourceNode.current(), "MsdfRange");
+        if (msdfRangeNode != nullptr)
+            msdfRange = MyGUI::utility::parseInt(msdfRangeNode->findAttribute("value"));
 
         MyGUI::xml::ElementPtr sizeNode = resourceNode->createChild("Property");
         sizeNode->addAttribute("key", "Size");
@@ -368,8 +372,14 @@ namespace Gui
         font->setResourceName(fontId.mValue);
         font->setShader("sdf");
         font->setMsdfMode(true);
-        font->setMsdfRange(4);
+        font->setMsdfRange(msdfRange);
         font->deserialization(resourceNode.current(), MyGUI::Version(3, 2, 0));
+
+        MyGUIPlatform::OSGTexture* texture = static_cast<MyGUIPlatform::OSGTexture*>(font->getTextureFont());
+        texture->getOrCreateStateSet()->addUniform(new osg::Uniform("unitRange",
+            osg::Vec2f(msdfRange / static_cast<float>(texture->getWidth()),
+                msdfRange / static_cast<float>(texture->getHeight()))));
+
         MyGUI::ResourceManager::getInstance().addResource(font);
 
         resolutionNode->setAttribute(
