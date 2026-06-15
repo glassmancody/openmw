@@ -65,8 +65,8 @@ if(NOT OPENMW_USE_SYSTEM_MYGUI)
 
     include(FetchContent)
     FetchContent_Declare(mygui
-        URL https://github.com/MyGUI/mygui/archive/refs/tags/MyGUI3.4.3.zip
-        URL_HASH SHA512=c804ef665e786076582367f171082cd2181fdbd214300ddcca4a4245c5a0f45e62e72778ee2d96ec46b393e22477dd729f9bb3006e6eecbf536674e34a057721
+        URL https://github.com/MyGUI/mygui/archive/refs/tags/MyGUI3.4.4.zip
+        URL_HASH SHA512=7fc7490519677c51d8a380bc7c3dd703a060c54819097de5690423117ddfb40adda09fcc7520faa262686942a5911224ea557a5dbbc4f54612567efc2e7d95a4
         SOURCE_DIR fetched/mygui
     )
     FetchContent_MakeAvailable(mygui)

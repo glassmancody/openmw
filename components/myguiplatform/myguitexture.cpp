@@ -164,7 +164,7 @@ namespace MyGUIPlatform
 
     void OSGTexture::setShader(const std::string& shaderName)
     {
-        getOrCreateStateSet()->setAttributeAndModes(
+        getOrCreateStateSet()->setAttribute(
             mResourceSystem->getSceneManager()->getShaderManager().getProgram(shaderName));
     }
 
