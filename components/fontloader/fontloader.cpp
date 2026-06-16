@@ -358,10 +358,12 @@ namespace Gui
         else
             resolution = MyGUI::utility::parseInt(resolutionNode->findAttribute("value"));
 
+#if MYGUI_VERSION > MYGUI_DEFINE_VERSION(3, 4, 3)
         int msdfRange = 4;
         MyGUI::xml::ElementPtr msdfRangeNode = getProperty(resourceNode.current(), "MsdfRange");
         if (msdfRangeNode != nullptr)
             msdfRange = MyGUI::utility::parseInt(msdfRangeNode->findAttribute("value"));
+#endif
 
         MyGUI::xml::ElementPtr sizeNode = resourceNode->createChild("Property");
         sizeNode->addAttribute("key", "Size");
@@ -370,15 +372,21 @@ namespace Gui
         MyGUI::ResourceTrueTypeFont* font = static_cast<MyGUI::ResourceTrueTypeFont*>(
             MyGUI::FactoryManager::getInstance().createObject("Resource", "ResourceTrueTypeFont"));
         font->setResourceName(fontId.mValue);
+
+#if MYGUI_VERSION > MYGUI_DEFINE_VERSION(3, 4, 3)
         font->setShader("sdf");
         font->setMsdfMode(true);
         font->setMsdfRange(msdfRange);
+#endif
+
         font->deserialization(resourceNode.current(), MyGUI::Version(3, 2, 0));
 
+#if MYGUI_VERSION > MYGUI_DEFINE_VERSION(3, 4, 3)
         MyGUIPlatform::OSGTexture* texture = static_cast<MyGUIPlatform::OSGTexture*>(font->getTextureFont());
         texture->getOrCreateStateSet()->addUniform(new osg::Uniform("unitRange",
             osg::Vec2f(msdfRange / static_cast<float>(texture->getWidth()),
                 msdfRange / static_cast<float>(texture->getHeight()))));
+#endif
 
         MyGUI::ResourceManager::getInstance().addResource(font);
 
